@@ -1,2 +1,6 @@
 [versions]
 kotlin = "1.8.20"
+groovy = "4.0.13"
+
+[libraries]
+groovy = {module = "org.apache.groovy:groovy", version.ref = "groovy"}
