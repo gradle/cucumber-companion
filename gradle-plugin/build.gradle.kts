@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
+    groovy
     `java-gradle-plugin`
     kotlin("jvm") version libs.versions.kotlin
 }
@@ -16,12 +17,12 @@ testing {
 
         // Create a new test suite
         val functionalTest by registering(JvmTestSuite::class) {
-            // Use Kotlin Test test framework
-            useKotlinTest(libs.versions.kotlin)
+            useSpock(libs.versions.spock)
 
             dependencies {
-                // functionalTest test suite depends on the production code in tests
                 implementation(project())
+                implementation(platform(libs.groovy.bom.get().toString()))
+                implementation(libs.groovy.nio)
             }
 
             targets {
