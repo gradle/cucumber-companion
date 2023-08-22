@@ -13,6 +13,12 @@ java {
     }
 }
 
+dependencies {
+    implementation(projects.companionGenerator)
+    implementation(libs.maven.pluginApi)
+    implementation(libs.maven.pluginAnnotations)
+}
+
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {

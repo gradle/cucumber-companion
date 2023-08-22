@@ -7,6 +7,8 @@ spock = "2.3-groovy-3.0"
 groovy-bom = { module = "org.codehaus.groovy:groovy-bom", version.ref = "groovy" }
 groovy-nio.module = "org.codehaus.groovy:groovy-nio"
 spock-bom =  { module = "org.spockframework:spock-bom", version.ref = "spock" }
+maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version = "3.9.4"}
+maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.9.0" }
 
 [plugins]
 mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }
