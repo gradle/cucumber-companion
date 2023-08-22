@@ -7,6 +7,11 @@ plugins {
     alias(libs.plugins.mavenPluginDevelopment)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
 
 testing {
     suites {

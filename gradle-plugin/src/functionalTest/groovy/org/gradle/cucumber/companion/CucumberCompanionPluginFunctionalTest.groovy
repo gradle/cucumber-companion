@@ -3,44 +3,191 @@
  */
 package org.gradle.cucumber.companion
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 import spock.lang.TempDir
+import spock.util.io.FileSystemFixture
 
+import java.nio.file.Files
 import java.nio.file.Path
 
 class CucumberCompanionPluginFunctionalTest extends Specification {
 
     @TempDir
-    Path projectDir
+    FileSystemFixture projectDir
     def buildFile
     def settingsFile
 
-    def setup() {
-        buildFile = projectDir.resolve("build.gradle")
-        settingsFile = projectDir.resolve("settings.gradle")
+    def "companion task can be registered"() {
+        given:
+        setupPlugin(buildScriptLanguage)
+
+        when:
+        def result = run("tasks", "--all")
+
+        then:
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        where:
+        buildScriptLanguage << ['groovy', 'kotlin']
     }
 
-    def "can run task"() {
+
+    def "testGenerateCucumberSuiteCompanion generates valid companion file"() {
         given:
+        setupPlugin(buildScriptLanguage)
+        setupProject()
+
+        when:
+        def result = run("testGenerateCucumberSuiteCompanion")
+
+        then:
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+        def expectedCompanions = [
+            ['Product_Search', ''],
+            ['Shopping_Cart', ''],
+            ['User_Registration', 'user/'],
+            ['Password_Reset', 'user/'],
+            ['User_Profile', 'user/']
+        ]
+
+        expectedCompanions.forEach {
+            def companionFile =  companionFile(*it)
+            def (name, path) = it
+            def pkg = path == '' ? null : path.dropRight(1).replaceAll('/', '.')
+            verifyAll {
+                Files.exists(companionFile)
+                def expected = """${pkg ? "                    package $pkg;\n\n" : ''}\
+                    @org.junit.platform.suite.api.Suite
+                    @org.junit.platform.suite.api.SelectClasspathResource(${path}${name}.java)
+                    class ${name} {}
+                    """.stripIndent(true)
+                companionFile.text == expected
+            }
+        }
+
+        where:
+        buildScriptLanguage << ['groovy', 'kotlin']
+    }
+
+    Path companionFile(String name, String path = "") {
+        return projectDir.resolve("build/generated-sources/cucumberCompanion-test/${path}${name}.java")
+    }
+
+    private void setupProject() {
+        projectDir.create {
+            dir("src/test/resources") {
+                file("Product Search.feature") << """\
+                    Feature: Product Search
+                      Scenario: Users can search for products
+                        Given a user is on the homepage
+                        When they enter a product name in the search bar
+                        And click the "Search" button
+                        Then they should see a list of matching products
+                """.stripIndent(true)
+                file("Shopping Cart.feature") << """\
+                    Feature: Shopping Cart
+                      Scenario: Users can add and remove items from the shopping cart
+                        Given a user has added items to their cart
+                        When they remove an item from the cart
+                        Then the item should be removed from the cart
+                        And the cart total should be updated accordingly
+                """.stripIndent(true)
+                dir("user") {
+                    file("User Registration.feature") << """\
+                        Feature: User Registration
+                          Scenario: New users can create an account
+                            Given a user is on the registration page
+                            When they fill in their information
+                            And click the "Sign Up" button
+                            Then they should be registered and logged in
+                    """.stripIndent(true)
+                    file("Password Reset.feature") << """\
+                        Feature: Password Reset
+                          Scenario: Users can reset their password
+                            Given a user is on the password reset page
+                            When they enter their email address
+                            And click the "Reset Password" button
+                            Then they should receive an email with instructions to reset their password
+                    """.stripIndent(true)
+                    file("User Profile.feature") << """\
+                        Feature: User Profile
+                          Scenario: Users can update their profile information
+                            Given a user is logged in
+                            When they navigate to their profile page
+                            And edit their profile information
+                            And click the "Save" button
+                            Then their profile information should be updated
+                    """.stripIndent(true)
+                }
+            }
+        }
+    }
+
+    void setupPlugin(String language) {
+        switch (language) {
+            case 'groovy':
+                setupPluginGroovy()
+                break
+            case 'kotlin':
+                setupPluginKotlin()
+                break
+            default:
+                throw new IllegalArgumentException("Unsupported language: $language")
+        }
+    }
+
+    private void setupPluginGroovy() {
+        buildFile = projectDir.file("build.gradle")
+        settingsFile = projectDir.file("settings.gradle")
         settingsFile.text = ""
         buildFile.text = """\
             plugins {
-                id('org.gradle.cucumber.companion.greeting')
+                id('java')
+                id('jvm-test-suite')
+                id('org.gradle.cucumber.companion')
+            }
+
+            testing {
+                suites {
+                    test {
+                        // unfortunately we can't make use of Groovy's extension functions, as Gradle doesn't support that.
+                        org.gradle.kotlin.dsl.CucumberCompanionKt.generateCucumberSuiteCompanion(delegate, project)
+                    }
+                }
             }
             """.stripIndent(true)
+    }
 
-        and:
+    private void setupPluginKotlin() {
+        buildFile = projectDir.file("build.gradle.kts")
+        settingsFile = projectDir.file("settings.gradle.kts")
+        settingsFile.text = ""
+        buildFile.text = """\
+            plugins {
+                java
+                `jvm-test-suite`
+                id("org.gradle.cucumber.companion")
+            }
+
+            testing {
+                suites {
+                    val test by getting(JvmTestSuite::class)   {
+                        generateCucumberSuiteCompanion(project)
+                    }
+                }
+            }
+            """.stripIndent(true)
+    }
+
+    BuildResult run(String... arguments) {
         def runner = GradleRunner.create()
             .forwardOutput()
             .withPluginClasspath()
-            .withArguments("greeting")
-            .withProjectDir(projectDir.toFile())
+            .withProjectDir(projectDir.currentPath.toFile())
+            .withArguments(arguments)
 
-        when:
-        def result = runner.build()
-
-        then:
-        result.output.contains("Hello from plugin 'org.gradle.cucumber.companion.greeting'")
+        return runner.build()
     }
 }

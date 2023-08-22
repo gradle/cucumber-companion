@@ -6,6 +6,12 @@ plugins {
     `jvm-test-suite`
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
 
 testing {
     suites {

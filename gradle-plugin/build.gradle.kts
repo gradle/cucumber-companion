@@ -6,6 +6,15 @@ plugins {
     kotlin("jvm") version libs.versions.kotlin
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+dependencies {
+    implementation(projects.companionGenerator)
+}
 
 testing {
     suites {
@@ -42,7 +51,7 @@ testing {
 gradlePlugin {
     // Define the plugin
     val greeting by plugins.creating {
-        id = "org.gradle.cucumber.companion.greeting"
+        id = "org.gradle.cucumber.companion"
         implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
     }
 }
