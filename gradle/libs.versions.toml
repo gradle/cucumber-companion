@@ -9,6 +9,7 @@ groovy-nio.module = "org.codehaus.groovy:groovy-nio"
 spock-bom =  { module = "org.spockframework:spock-bom", version.ref = "spock" }
 maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version = "3.9.4"}
 maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.9.0" }
+takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.1"}
 
 [plugins]
 mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }
