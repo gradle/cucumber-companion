@@ -7,6 +7,7 @@ import spock.util.io.FileSystemFixture
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
 
 class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
 
@@ -18,11 +19,18 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
         pom = workspace.file("pom.xml")
     }
 
+    private List<String> mavenHomes() {
+        return System.getProperties().entrySet().stream()
+            .filter { it.key.toString().startsWith("testContext.internal.mavenHome.") }
+            .map { it.value }
+            .collect(Collectors.toList())
+    }
+
     def "generate-cucumber-companion-files mojo generates valid companion file" () {
         given:
         createPom()
         createFeatureFiles()
-        def forkedRunner = MavenRuntime.forkedBuilder(new File(System.getProperty("testInternal.mavenInstallDir"))).build()
+        def forkedRunner = MavenRuntime.forkedBuilder(new File(mavenHome)).build()
 
         when:
         def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test", "-X")
@@ -55,6 +63,9 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
                 companionFile.text == expected
             }
         }
+
+        where:
+        mavenHome << mavenHomes()
     }
 
     private String safeName(String name) {
@@ -87,7 +98,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
                 <plugin>
                     <groupId>org.gradle.cucumber.companion</groupId>
                     <artifactId>cucumber-companion-plugin</artifactId>
-                    <version>${System.getProperty("testInternal.pluginVersion")}</version>
+                    <version>\${it-project.version}</version>
                     <executions>
                         <execution>
                             <id>generate-companion</id>
