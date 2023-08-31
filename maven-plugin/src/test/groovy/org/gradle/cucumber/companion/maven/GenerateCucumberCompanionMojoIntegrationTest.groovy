@@ -18,7 +18,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
         pom = workspace.file("pom.xml")
     }
 
-    def "hello world" () {
+    def "generate-cucumber-companion-files mojo generates valid companion file" () {
         given:
         createPom()
         createFeatureFiles()
