@@ -45,11 +45,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then:
         result.output.contains("testGenerateCucumberSuiteCompanion")
         def expectedCompanions = [
-            ['Product_Search', ''],
-            ['Shopping_Cart', ''],
-            ['User_Registration', 'user/'],
-            ['Password_Reset', 'user/'],
-            ['User_Profile', 'user/']
+            ['Product Search', ''],
+            ['Shopping Cart', ''],
+            ['User Registration', 'user/'],
+            ['Password Reset', 'user/'],
+            ['User Profile', 'user/']
         ]
 
         expectedCompanions.forEach {
@@ -61,7 +61,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 def expected = """${pkg ? "                    package $pkg;\n\n" : ''}\
                     @org.junit.platform.suite.api.Suite
                     @org.junit.platform.suite.api.SelectClasspathResource("${path}${name}.feature")
-                    class ${name} {}
+                    class ${safeName(name)} {}
                     """.stripIndent(true)
                 companionFile.text == expected
             }
@@ -71,8 +71,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         buildScriptLanguage << ['groovy', 'kotlin']
     }
 
+    private String safeName(String name) {
+        name.replaceAll(" ", "_")
+    }
+
     Path companionFile(String name, String path = "") {
-        return projectDir.resolve("build/generated-sources/cucumberCompanion-test/${path}${name}.java")
+        return projectDir.resolve("build/generated-sources/cucumberCompanion-test/${path}${safeName(name)}.java")
     }
 
     private void setupProject() {
