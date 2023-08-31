@@ -1,5 +1,10 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import de.benediktritter.maven.plugin.development.MavenPluginDevelopmentExtension
+import de.benediktritter.maven.plugin.development.internal.DefaultMavenPluginDevelopmentExtension
+import de.benediktritter.maven.plugin.development.task.GenerateHelpMojoSourcesTask
+import de.benediktritter.maven.plugin.development.task.GenerateMavenPluginDescriptorTask
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import java.util.*
 
@@ -9,6 +14,7 @@ plugins {
     `maven-publish`
     `jvm-test-suite`
     alias(libs.plugins.mavenPluginDevelopment)
+    alias(libs.plugins.shadow)
 }
 
 val ourArtifactId = "cucumber-companion-plugin"
@@ -21,10 +27,11 @@ val m2Repository = layout.buildDirectory.dir("m2")
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        val maven by creating(MavenPublication::class) {
             artifactId = ourArtifactId
-            from(components["java"])
+//            from(components["java"])
         }
+        shadow.component(maven)
     }
     repositories {
         maven {
@@ -49,12 +56,13 @@ val mavenInstallation: Configuration by configurations.creating {
     attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
 }
 
-val mavenVersion = "3.3.9"
+val mavenVersion = "3.8.6"
 
 dependencies {
     implementation(projects.companionGenerator)
-    implementation(libs.maven.pluginApi)
-    implementation(libs.maven.pluginAnnotations)
+    compileOnly(libs.maven.core)
+    compileOnly(libs.maven.pluginApi)
+    compileOnly(libs.maven.pluginAnnotations)
 
     registerTransform(UnzipTransform::class) {
         from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.ZIP_TYPE)
@@ -111,9 +119,6 @@ testing {
             targets {
                 all {
                     testTask {
-                        doFirst {
-                            m2Repository.get().asFile.mkdirs()
-                        }
                         // Takari needs at least Java 11
                         javaLauncher.set(javaToolchains.launcherFor {
                             languageVersion = JavaLanguageVersion.of(17)
@@ -121,11 +126,22 @@ testing {
                         options {
                             jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-DtestInternal.mavenInstallDir=${mavenInstallDir.get().asFile.absolutePath}") })
                         }
+                        systemProperty("testInternal.pluginVersion", version)
+                        environment("CONTINUOUS_INTEGRATION", true) // takari will print the log on error if this is set
                     }
                 }
             }
         }
     }
+}
+
+// adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files
+project.afterEvaluate {
+    val sourceSet = extensions.getByType(MavenPluginDevelopmentExtension::class).pluginSourceSet.get()
+    tasks.named<ShadowJar>("shadowJar").configure {
+        from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
+    }
+    sourceSet.java.srcDir(tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })
 }
 
 listOf("generateMavenPluginDescriptor", "generateMavenPluginHelpMojoSources").forEach {

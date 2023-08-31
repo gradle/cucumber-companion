@@ -21,6 +21,9 @@ public class CompanionFile {
     private final Optional<String> packageName;
 
     public CompanionFile(Path sourceDir, Path destinationDir, Path actual) {
+        this(sourceDir, destinationDir, actual, "");
+    }
+    public CompanionFile(Path sourceDir, Path destinationDir, Path actual, String suffix) {
         if (!actual.getFileName().toString().endsWith(".feature")) {
             throw new IllegalArgumentException("The passed parameter was not a feature file:" + actual);
         }
@@ -29,7 +32,7 @@ public class CompanionFile {
         this.actual = actual;
         this.relativeSrc = sourceDir.relativize(actual);
         this.featureName = toValidClassName(getNameWithoutExtension(actual));
-        this.relativeDest = relativeSrc.resolveSibling(featureName + ".java");
+        this.relativeDest = relativeSrc.resolveSibling(featureName + suffix + ".java");
         this.destination = destinationDir.resolve(relativeDest);
         this.packageName = relativeSrc.getParent() == null ? Optional.empty() : Optional.of(toPackageList(relativeSrc.getParent()));
     }
@@ -40,10 +43,10 @@ public class CompanionFile {
 
     private String toPackageList(Path parent) {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(parent.iterator(), Spliterator.ORDERED), false)
-                .map(Path::toString)
-                .map(VALID_PACKAGE_ELEMENTS::matcher)
-                .map(m -> m.replaceAll("_"))
-                .collect(Collectors.joining("."));
+            .map(Path::toString)
+            .map(VALID_PACKAGE_ELEMENTS::matcher)
+            .map(m -> m.replaceAll("_"))
+            .collect(Collectors.joining("."));
     }
 
     private static String getNameWithoutExtension(Path path) {
@@ -60,10 +63,15 @@ public class CompanionFile {
     }
 
     public String getClassPathResource() {
-        return relativeDest.toString();
+        return relativeSrc.toString();
     }
 
     public Optional<String> getPackageName() {
         return packageName;
+    }
+
+    @Override
+    public String toString() {
+        return "CompanionFile{src=" + actual + ", dest=" + destination + "}";
     }
 }

@@ -60,7 +60,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 Files.exists(companionFile)
                 def expected = """${pkg ? "                    package $pkg;\n\n" : ''}\
                     @org.junit.platform.suite.api.Suite
-                    @org.junit.platform.suite.api.SelectClasspathResource(${path}${name}.java)
+                    @org.junit.platform.suite.api.SelectClasspathResource("${path}${name}.feature")
                     class ${name} {}
                     """.stripIndent(true)
                 companionFile.text == expected
