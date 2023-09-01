@@ -3,21 +3,28 @@
  */
 package org.gradle.cucumber.companion
 
+import org.gradle.cucumber.companion.fixtures.CompanionAssertions
+import org.gradle.cucumber.companion.fixtures.CucumberFixture
+import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
 
-import java.nio.file.Files
 import java.nio.file.Path
 
 class CucumberCompanionPluginFunctionalTest extends Specification {
 
     @TempDir
-    FileSystemFixture projectDir
+    FileSystemFixture workspace
     def buildFile
     def settingsFile
+
+
+    @Delegate
+    CucumberFixture cucumberFixture = new CucumberFixture()
+    CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 
     def "companion task can be registered"() {
         given:
@@ -37,35 +44,20 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     def "testGenerateCucumberSuiteCompanion generates valid companion file"() {
         given:
         setupPlugin(buildScriptLanguage)
-        setupProject()
+        createFeatureFiles(workspace)
 
         when:
         def result = run("testGenerateCucumberSuiteCompanion")
 
         then:
         result.output.contains("testGenerateCucumberSuiteCompanion")
-        def expectedCompanions = [
-            ['Product Search', ''],
-            ['Shopping Cart', ''],
-            ['User Registration', 'user/'],
-            ['Password Reset', 'user/'],
-            ['User Profile', 'user/']
-        ]
+
+        def expectedCompanions = expectedCompanionFiles()
 
         expectedCompanions.forEach {
-            def companionFile =  companionFile(*it)
-            def (name, path) = it
-            def pkg = path == '' ? null : path.dropRight(1).replaceAll('/', '.')
-            verifyAll {
-                Files.exists(companionFile)
-                def expected = """${pkg ? "                    package $pkg;\n\n" : ''}\
-                    @org.junit.platform.suite.api.Suite
-                    @org.junit.platform.suite.api.SelectClasspathResource("${path}${name}.feature")
-                    class ${safeName(name)} {}
-                    """.stripIndent(true)
-                companionFile.text == expected
-            }
+            companionAssertions.assertCompanionFile(it)
         }
+
 
         where:
         buildScriptLanguage << ['groovy', 'kotlin']
@@ -75,58 +67,8 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         name.replaceAll(" ", "_")
     }
 
-    Path companionFile(String name, String path = "") {
-        return projectDir.resolve("build/generated-sources/cucumberCompanion-test/${path}${safeName(name)}.java")
-    }
-
-    private void setupProject() {
-        projectDir.create {
-            dir("src/test/resources") {
-                file("Product Search.feature") << """\
-                    Feature: Product Search
-                      Scenario: Users can search for products
-                        Given a user is on the homepage
-                        When they enter a product name in the search bar
-                        And click the "Search" button
-                        Then they should see a list of matching products
-                """.stripIndent(true)
-                file("Shopping Cart.feature") << """\
-                    Feature: Shopping Cart
-                      Scenario: Users can add and remove items from the shopping cart
-                        Given a user has added items to their cart
-                        When they remove an item from the cart
-                        Then the item should be removed from the cart
-                        And the cart total should be updated accordingly
-                """.stripIndent(true)
-                dir("user") {
-                    file("User Registration.feature") << """\
-                        Feature: User Registration
-                          Scenario: New users can create an account
-                            Given a user is on the registration page
-                            When they fill in their information
-                            And click the "Sign Up" button
-                            Then they should be registered and logged in
-                    """.stripIndent(true)
-                    file("Password Reset.feature") << """\
-                        Feature: Password Reset
-                          Scenario: Users can reset their password
-                            Given a user is on the password reset page
-                            When they enter their email address
-                            And click the "Reset Password" button
-                            Then they should receive an email with instructions to reset their password
-                    """.stripIndent(true)
-                    file("User Profile.feature") << """\
-                        Feature: User Profile
-                          Scenario: Users can update their profile information
-                            Given a user is logged in
-                            When they navigate to their profile page
-                            And edit their profile information
-                            And click the "Save" button
-                            Then their profile information should be updated
-                    """.stripIndent(true)
-                }
-            }
-        }
+    Path companionFile(ExpectedCompanionFile companion) {
+        return workspace.resolve("build/generated-sources/cucumberCompanion-test/${companion.relativePath}")
     }
 
     void setupPlugin(String language) {
@@ -143,8 +85,8 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     }
 
     private void setupPluginGroovy() {
-        buildFile = projectDir.file("build.gradle")
-        settingsFile = projectDir.file("settings.gradle")
+        buildFile = workspace.file("build.gradle")
+        settingsFile = workspace.file("settings.gradle")
         settingsFile.text = ""
         buildFile.text = """\
             plugins {
@@ -165,8 +107,8 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     }
 
     private void setupPluginKotlin() {
-        buildFile = projectDir.file("build.gradle.kts")
-        settingsFile = projectDir.file("settings.gradle.kts")
+        buildFile = workspace.file("build.gradle.kts")
+        settingsFile = workspace.file("settings.gradle.kts")
         settingsFile.text = ""
         buildFile.text = """\
             plugins {
@@ -189,7 +131,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         def runner = GradleRunner.create()
             .forwardOutput()
             .withPluginClasspath()
-            .withProjectDir(projectDir.currentPath.toFile())
+            .withProjectDir(workspace.currentPath.toFile())
             .withArguments(arguments)
 
         return runner.build()

@@ -3,6 +3,7 @@
 plugins {
     groovy
     `java-gradle-plugin`
+    `java-test-fixtures`
     kotlin("jvm") version libs.versions.kotlin
 }
 
@@ -32,6 +33,7 @@ testing {
                 implementation(project())
                 implementation(platform(libs.groovy.bom.get().toString()))
                 implementation(libs.groovy.nio)
+                implementation(testFixtures(projects.companionGenerator))
             }
 
             targets {

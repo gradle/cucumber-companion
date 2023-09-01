@@ -1,6 +1,9 @@
 package org.gradle.cucumber.companion.maven
 
 import io.takari.maven.testing.executor.MavenRuntime
+import org.gradle.cucumber.companion.fixtures.CompanionAssertions
+import org.gradle.cucumber.companion.fixtures.CucumberFixture
+import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -11,9 +14,14 @@ import java.util.stream.Collectors
 
 class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
 
+
     @TempDir
     FileSystemFixture workspace
     Path pom
+
+    @Delegate
+    CucumberFixture cucumberFixture = new CucumberFixture()
+    CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 
     def setup() {
         pom = workspace.file("pom.xml")
@@ -26,14 +34,15 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
             .collect(Collectors.toList())
     }
 
-    def "generate-cucumber-companion-files mojo generates valid companion file" () {
+    def "generate-cucumber-companion-files mojo generates valid companion files" () {
         given:
         createPom()
-        createFeatureFiles()
+        createFeatureFiles(workspace)
+        createStepFiles(workspace)
         def forkedRunner = MavenRuntime.forkedBuilder(new File(mavenHome)).build()
 
         when:
-        def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test", "-X")
+        def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test-compile")
 
         then:
         noExceptionThrown()
@@ -41,28 +50,33 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
         result.log.each {println it}
 
         and:
-        def expectedCompanions = [
-            ['Product Search', ''],
-            ['Shopping Cart', ''],
-            ['User Registration', 'user/'],
-            ['Password Reset', 'user/'],
-            ['User Profile', 'user/']
-        ]
+        def expectedCompanions = expectedCompanionFiles("Test")
 
         expectedCompanions.forEach {
-            def companionFile =  companionFile(*it)
-            def (name, path) = it
-            def pkg = path == '' ? null : path.dropRight(1).replaceAll('/', '.')
-            verifyAll {
-                Files.exists(companionFile)
-                def expected = """${pkg ? "                    package $pkg;\n\n" : ''}\
-                    @org.junit.platform.suite.api.Suite
-                    @org.junit.platform.suite.api.SelectClasspathResource("${path}${name}.feature")
-                    class ${safeName(name)} {}
-                    """.stripIndent(true)
-                companionFile.text == expected
-            }
+            companionAssertions.assertCompanionFile(it)
         }
+
+        where:
+        mavenHome << mavenHomes()
+    }
+
+    def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire" () {
+        given:
+        createPom()
+        createFeatureFiles(workspace)
+        createStepFiles(workspace)
+        def forkedRunner = MavenRuntime.forkedBuilder(new File(mavenHome)).build()
+
+        when:
+        def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test")
+
+        then:
+        noExceptionThrown()
+        result.assertErrorFreeLog()
+        result.log.each {println it}
+
+        and:
+        workspace.resolve("target/surefires-reports")
 
         where:
         mavenHome << mavenHomes()
@@ -72,8 +86,8 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
         name.replaceAll(" ", "_")
     }
 
-    Path companionFile(String name, String path = "") {
-        return workspace.resolve("target/generated-test-sources/cucumberCompanion/${path}${safeName(name)}Test.java")
+    Path companionFile(ExpectedCompanionFile companion) {
+        return workspace.resolve("target/generated-test-sources/cucumberCompanion/${companion.relativePath}")
     }
 
     private void createPom() {
@@ -172,56 +186,5 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
             </dependency>
         </dependencies>
     </project>""".stripIndent(true)
-    }
-
-
-    private void createFeatureFiles() {
-        workspace.create {
-            dir("src/test/resources") {
-                file("Product Search.feature") << """\
-                    Feature: Product Search
-                      Scenario: Users can search for products
-                        Given a user is on the homepage
-                        When they enter a product name in the search bar
-                        And click the "Search" button
-                        Then they should see a list of matching products
-                """.stripIndent(true)
-                file("Shopping Cart.feature") << """\
-                    Feature: Shopping Cart
-                      Scenario: Users can add and remove items from the shopping cart
-                        Given a user has added items to their cart
-                        When they remove an item from the cart
-                        Then the item should be removed from the cart
-                        And the cart total should be updated accordingly
-                """.stripIndent(true)
-                dir("user") {
-                    file("User Registration.feature") << """\
-                        Feature: User Registration
-                          Scenario: New users can create an account
-                            Given a user is on the registration page
-                            When they fill in their information
-                            And click the "Sign Up" button
-                            Then they should be registered and logged in
-                    """.stripIndent(true)
-                    file("Password Reset.feature") << """\
-                        Feature: Password Reset
-                          Scenario: Users can reset their password
-                            Given a user is on the password reset page
-                            When they enter their email address
-                            And click the "Reset Password" button
-                            Then they should receive an email with instructions to reset their password
-                    """.stripIndent(true)
-                    file("User Profile.feature") << """\
-                        Feature: User Profile
-                          Scenario: Users can update their profile information
-                            Given a user is logged in
-                            When they navigate to their profile page
-                            And edit their profile information
-                            And click the "Save" button
-                            Then their profile information should be updated
-                    """.stripIndent(true)
-                }
-            }
-        }
     }
 }

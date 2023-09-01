@@ -4,12 +4,21 @@ plugins {
     java
     groovy
     `jvm-test-suite`
+    `java-test-fixtures`
 }
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+}
+
+dependencies {
+    testFixturesApi(platform(libs.groovy.bom.get().toString()))
+    testFixturesApi(libs.groovy.core)
+    testFixturesApi(libs.groovy.nio)
+    testFixturesApi(platform(libs.spock.bom.get().toString()))
+    testFixturesApi(libs.spock.core)
 }
 
 
