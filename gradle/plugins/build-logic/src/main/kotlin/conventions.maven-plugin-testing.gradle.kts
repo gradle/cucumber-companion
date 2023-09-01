@@ -49,7 +49,6 @@ val functionalTest by testing.suites.creating(JvmTestSuite::class) {
     targets {
         all {
             testTask {
-                outputs.dir(m2Repository)
                 // Takari needs at least Java 11
                 javaLauncher.set(javaToolchains.launcherFor {
                     languageVersion = JavaLanguageVersion.of(17)
