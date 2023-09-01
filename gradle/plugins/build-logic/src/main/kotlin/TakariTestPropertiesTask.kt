@@ -19,7 +19,8 @@ abstract class TakariTestPropertiesTask : DefaultTask() {
     @get:Input
     abstract val version: Property<String>
 
-    @get:[InputDirectory PathSensitive(PathSensitivity.NAME_ONLY)]
+    // don't use @InputDirectory here because we do not care for the directory's contents but only for its name
+    @get:Input
     abstract val testRepositoryPath: DirectoryProperty
 
     @get:OutputDirectory
