@@ -13,20 +13,33 @@ plugins {
 // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
 val libs = the<LibrariesForLibs>()
 
-interface MavenPluginTestingExtension {
-    val mavenVersions: SetProperty<String>
+
+abstract class MavenPluginTestingExtension {
+
+    companion object {
+        const val TEST_REPOSITORY_NAME = "TestLocal"
+    }
+
+
+    abstract val mavenVersions: SetProperty<String>
+    abstract val pluginPublication: Property<MavenPublication>
+
+    fun publishToTestRepositoryTaskName(): Provider<String> {
+        return pluginPublication.map { it.name }
+            .map { it.replaceFirstChar(Char::titlecase) }
+            .map { "publish${it}PublicationTo${TEST_REPOSITORY_NAME}Repository" }
+    }
 }
 
 val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesting")
 
-val m2Repository = layout.buildDirectory.dir("m2")
+val m2Repository: Provider<Directory> = layout.buildDirectory.dir("m2")
 val takariResourceDir: Provider<Directory> = layout.buildDirectory.dir("takari-test")
 
 val prepareTakariTestProperties by tasks.creating {
     // installs our own plugin into the project-local m2 repository in ./build/m2
-    dependsOn("publishMavenPublicationToTestLocalRepository")
-
-    val publication = provider { publishing.publications.withType<MavenPublication>().single() }
+    val publication = extension.pluginPublication
+    dependsOn(extension.publishToTestRepositoryTaskName())
 
     notCompatibleWithConfigurationCache("prototyping")
     outputs.dir(takariResourceDir)
@@ -54,7 +67,7 @@ val prepareTakariTestProperties by tasks.creating {
 publishing {
     repositories {
         maven {
-            name = "testLocal"
+            name = MavenPluginTestingExtension.TEST_REPOSITORY_NAME
             url = m2Repository.get().dir("repository").asFile.toURI()
         }
     }

@@ -64,7 +64,8 @@ val functionalTest by testing.suites.getting(JvmTestSuite::class) {
 }
 
 mavenPluginTesting {
-    mavenVersions = setOf("3.3.9", "3.8.8")
+    mavenVersions = setOf("3.8.6", "3.8.7", "3.9.1")
+    pluginPublication = publishing.publications.named<MavenPublication>("maven")
 }
 
 
