@@ -47,13 +47,6 @@ dependencies {
     compileOnly(libs.maven.pluginAnnotations)
 }
 
-val test by testing.suites.getting(JvmTestSuite::class) {
-    useSpock(libs.versions.spock)
-    dependencies {
-        implementation(platform(libs.groovy.bom.get().toString()))
-    }
-}
-
 val functionalTest by testing.suites.getting(JvmTestSuite::class) {
     useSpock(libs.versions.spock)
     dependencies {
