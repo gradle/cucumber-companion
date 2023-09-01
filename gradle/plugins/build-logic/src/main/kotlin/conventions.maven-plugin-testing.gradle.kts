@@ -20,7 +20,6 @@ abstract class MavenPluginTestingExtension {
         const val TEST_REPOSITORY_NAME = "TestLocal"
     }
 
-
     abstract val mavenVersions: SetProperty<String>
     abstract val pluginPublication: Property<MavenPublication>
 
@@ -36,31 +35,14 @@ val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesti
 val m2Repository: Provider<Directory> = layout.buildDirectory.dir("m2")
 val takariResourceDir: Provider<Directory> = layout.buildDirectory.dir("takari-test")
 
-val prepareTakariTestProperties by tasks.creating {
-    // installs our own plugin into the project-local m2 repository in ./build/m2
-    val publication = extension.pluginPublication
+val prepareTakariTestProperties by tasks.creating(TakariTestPropertiesTask::class) {
     dependsOn(extension.publishToTestRepositoryTaskName())
 
-    notCompatibleWithConfigurationCache("prototyping")
-    outputs.dir(takariResourceDir)
-    inputs.property("groupId", publication.map { it.groupId })
-    inputs.property("artifactId", publication.map { it.artifactId })
-    inputs.property("version", publication.map { it.version })
-
-    doFirst {
-        val testProperties = Properties()
-        testProperties.putAll(
-            mapOf(
-                "project.groupId" to publication.map { it.groupId }.get(),
-                "project.artifactId" to publication.map { it.artifactId }.get(),
-                "project.version" to publication.map { it.version }.get(),
-                "localRepository" to m2Repository.get().dir("repository").asFile.path,
-                "repository.0" to "<id>central</id><url>https://repo.maven.apache.org/maven2</url><releases><enabled>true</enabled></releases><snapshots><enabled>false</enabled></snapshots>",
-                "updateSnapshots" to "false"
-            )
-        )
-        takariResourceDir.get().file("test.properties").asFile.writer().use { testProperties.store(it, "") }
-    }
+    groupId = extension.pluginPublication.map { it.groupId }
+    artifactId = extension.pluginPublication.map { it.artifactId }
+    version = extension.pluginPublication.map { it.version }
+    testRepositoryPath = m2Repository
+    outputDirectory = takariResourceDir
 }
 
 // Create a project-local file system m2 repository that will be used for all functional tests.
