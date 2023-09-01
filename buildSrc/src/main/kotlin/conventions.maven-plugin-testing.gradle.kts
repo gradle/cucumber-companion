@@ -61,22 +61,6 @@ publishing {
     }
 }
 
-// Configuration that allows to declare a dependency to a maven version that will be used in functional tests
-val mavenInstallation: Configuration by configurations.creating {
-    isCanBeResolved = true
-    isCanBeConsumed = false
-
-    resolutionStrategy.cacheDynamicVersionsFor(1, TimeUnit.HOURS)
-    attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
-}
-
-dependencies {
-    registerTransform(UnzipTransform::class) {
-        from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.ZIP_TYPE)
-        to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
-    }
-}
-
 val functionalTest by testing.suites.creating(JvmTestSuite::class) {
     testType = TestSuiteType.FUNCTIONAL_TEST
     dependencies {
