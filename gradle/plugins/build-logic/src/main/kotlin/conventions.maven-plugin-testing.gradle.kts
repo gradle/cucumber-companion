@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import java.util.*
 
 plugins {

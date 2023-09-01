@@ -3,7 +3,7 @@
 plugins {
     groovy
     `java-gradle-plugin`
-    kotlin("jvm")
+    kotlin("jvm") version libs.versions.kotlin
 }
 
 java {
