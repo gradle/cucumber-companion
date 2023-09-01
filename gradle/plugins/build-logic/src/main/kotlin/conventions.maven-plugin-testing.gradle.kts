@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.gradle.accessors.dm.LibrariesForLibs
-import java.util.*
 
 plugins {
     id("java")
@@ -12,22 +11,6 @@ plugins {
 
 // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
 val libs = the<LibrariesForLibs>()
-
-abstract class MavenPluginTestingExtension {
-
-    companion object {
-        const val TEST_REPOSITORY_NAME = "TestLocal"
-    }
-
-    abstract val mavenVersions: SetProperty<String>
-    abstract val pluginPublication: Property<MavenPublication>
-
-    fun publishToTestRepositoryTaskName(): Provider<String> {
-        return pluginPublication.map { it.name }
-            .map { it.replaceFirstChar(Char::titlecase) }
-            .map { "publish${it}PublicationTo${TEST_REPOSITORY_NAME}Repository" }
-    }
-}
 
 val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesting")
 
@@ -40,7 +23,7 @@ val prepareTakariTestProperties by tasks.creating(TakariTestPropertiesTask::clas
     groupId = extension.pluginPublication.map { it.groupId }
     artifactId = extension.pluginPublication.map { it.artifactId }
     version = extension.pluginPublication.map { it.version }
-    testRepositoryPath = m2Repository
+    testRepositoryPath = m2Repository.map { it.dir("repository").asFile.path }
     outputDirectory = takariResourceDir
 }
 

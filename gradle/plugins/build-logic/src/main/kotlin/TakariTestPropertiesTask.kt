@@ -1,14 +1,15 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import java.util.*
 
 /**
  * Generates the test.properties file that is required for executing maven plugin tests via takari
  */
-abstract class TakariTestPropertiesTask : DefaultTask() {
+abstract class TakariTestPropertiesTask() : DefaultTask() {
 
     @get:Input
     abstract val groupId: Property<String>
@@ -19,9 +20,8 @@ abstract class TakariTestPropertiesTask : DefaultTask() {
     @get:Input
     abstract val version: Property<String>
 
-    // don't use @InputDirectory here because we do not care for the directory's contents but only for its name
     @get:Input
-    abstract val testRepositoryPath: DirectoryProperty
+    abstract val testRepositoryPath: Property<String>
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
@@ -34,7 +34,7 @@ abstract class TakariTestPropertiesTask : DefaultTask() {
                 "project.groupId" to groupId.get(),
                 "project.artifactId" to artifactId.get(),
                 "project.version" to version.get(),
-                "localRepository" to testRepositoryPath.get().dir("repository").asFile.path,
+                "localRepository" to testRepositoryPath.get(),
                 "repository.0" to "<id>central</id><url>https://repo.maven.apache.org/maven2</url><releases><enabled>true</enabled></releases><snapshots><enabled>false</enabled></snapshots>",
                 "updateSnapshots" to "false"
             )
