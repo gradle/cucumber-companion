@@ -31,8 +31,8 @@ public class CompanionFile {
         this.targetDir = destinationDir;
         this.actual = actual;
         this.relativeSrc = sourceDir.relativize(actual);
-        this.featureName = toValidClassName(getNameWithoutExtension(actual));
-        this.relativeDest = relativeSrc.resolveSibling(featureName + suffix + ".java");
+        this.featureName = toValidClassName(getNameWithoutExtension(actual)) + suffix;
+        this.relativeDest = relativeSrc.resolveSibling(featureName + ".java");
         this.destination = destinationDir.resolve(relativeDest);
         this.packageName = relativeSrc.getParent() == null ? Optional.empty() : Optional.of(toPackageList(relativeSrc.getParent()));
     }
