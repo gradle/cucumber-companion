@@ -13,7 +13,6 @@ plugins {
 // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
 val libs = the<LibrariesForLibs>()
 
-
 abstract class MavenPluginTestingExtension {
 
     companion object {
@@ -68,9 +67,6 @@ val functionalTest by testing.suites.creating(JvmTestSuite::class) {
         all {
             testTask {
                 outputs.dir(m2Repository)
-                doFirst {
-                    m2Repository.get().asFile.mkdirs()
-                }
                 // Takari needs at least Java 11
                 javaLauncher.set(javaToolchains.launcherFor {
                     languageVersion = JavaLanguageVersion.of(17)
