@@ -3,6 +3,7 @@
  */
 package org.gradle.cucumber.companion
 
+import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
@@ -12,6 +13,7 @@ import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
 
+import java.nio.file.Files
 import java.nio.file.Path
 
 class CucumberCompanionPluginFunctionalTest extends Specification {
@@ -40,8 +42,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         buildScriptLanguage << ['groovy', 'kotlin']
     }
 
-
-    def "testGenerateCucumberSuiteCompanion generates valid companion file"() {
+    def "testGenerateCucumberSuiteCompanion generates valid companion files"() {
         given:
         setupPlugin(buildScriptLanguage)
         createFeatureFiles(workspace)
@@ -58,13 +59,61 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             companionAssertions.assertCompanionFile(it)
         }
 
-
         where:
         buildScriptLanguage << ['groovy', 'kotlin']
     }
 
-    private String safeName(String name) {
-        name.replaceAll(" ", "_")
+    def "testGenerateCucumberSuiteCompanion is incremental"() {
+        given: "starting with a single feature"
+        setupPlugin(buildScriptLanguage)
+        createFeatureFiles(workspace, [CucumberFeature.ProductSearch])
+
+        when: "running the generate task"
+        def result = run("testGenerateCucumberSuiteCompanion")
+
+        then: "feature compantion is present"
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        expectedCompanionFiles('', [CucumberFeature.ProductSearch]).forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+
+        when: "adding another feature"
+        createFeatureFiles(workspace, [CucumberFeature.PasswordReset])
+
+        and: "running the generate task again"
+        result = run("testGenerateCucumberSuiteCompanion")
+
+        then: "both companion files are present"
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        expectedCompanionFiles('', [CucumberFeature.ProductSearch, CucumberFeature.PasswordReset]).forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+        when: "deleting a feature file"
+        Files.delete(workspace.file("src/test/resources/${CucumberFeature.ProductSearch.featureFilePath}"))
+
+        and: "running the generate task again"
+        result = run("testGenerateCucumberSuiteCompanion")
+
+        then: "one companion remains"
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        expectedCompanionFiles('', [ CucumberFeature.PasswordReset]).forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+        and: "the other is gone"
+        expectedCompanionFiles('', [ CucumberFeature.ProductSearch]).forEach {
+            with(companionFile(it)) {
+                !Files.exists(it)
+            }
+        }
+
+        where:
+        buildScriptLanguage << ['groovy', 'kotlin']
     }
 
     Path companionFile(ExpectedCompanionFile companion) {

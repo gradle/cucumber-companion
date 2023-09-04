@@ -9,8 +9,8 @@ import spock.util.io.FileSystemFixture
 class CucumberFixture {
 
     @Memoized
-    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '') {
-        CucumberFeature.all().collect {
+    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', List<CucumberFeature> features = CucumberFeature.all()) {
+        features.collect {
             ExpectedCompanionFile.create(it.featureName, it.packageName, suffix)
         }
     }
