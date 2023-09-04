@@ -1,23 +1,13 @@
 package org.gradle.cucumber.companion.maven
 
-import io.takari.maven.testing.executor.MavenRuntime
 import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
-import spock.lang.Specification
-import spock.lang.TempDir
-import spock.util.io.FileSystemFixture
 
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
 
-class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
-
-
-    @TempDir
-    FileSystemFixture workspace
-    Path pom
+class GenerateCucumberCompanionMojoIntegrationTest extends BaseMavenFuncTest {
 
     @Delegate
     CucumberFixture cucumberFixture = new CucumberFixture()
@@ -34,20 +24,19 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
             .collect(Collectors.toList())
     }
 
-    def "generate-cucumber-companion-files mojo generates valid companion files" () {
+    def "generate-cucumber-companion-files mojo generates valid companion files"() {
         given:
         createPom()
         createFeatureFiles(workspace)
         createStepFiles(workspace)
-        def forkedRunner = MavenRuntime.forkedBuilder(new File(mavenHome)).build()
 
         when:
-        def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test-compile")
+        def result = execute(distribution, "test")
 
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
-        result.log.each {println it}
+        result.log.each { println it }
 
         and:
         def expectedCompanions = expectedCompanionFiles("Test")
@@ -57,29 +46,28 @@ class GenerateCucumberCompanionMojoIntegrationTest extends Specification {
         }
 
         where:
-        mavenHome << mavenHomes()
+        distribution << distributions()
     }
 
-    def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire" () {
+    def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
         given:
         createPom()
         createFeatureFiles(workspace)
         createStepFiles(workspace)
-        def forkedRunner = MavenRuntime.forkedBuilder(new File(mavenHome)).build()
 
         when:
-        def result = forkedRunner.forProject(workspace.currentPath.toFile()).execute("test")
+        def result = execute(distribution, "test")
 
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
-        result.log.each {println it}
+        result.log.each { println it }
 
         and:
         workspace.resolve("target/surefires-reports")
 
         where:
-        mavenHome << mavenHomes()
+        distribution << distributions()
     }
 
     private String safeName(String name) {

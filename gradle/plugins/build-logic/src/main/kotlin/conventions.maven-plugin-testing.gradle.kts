@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.gradle.accessors.dm.LibrariesForLibs
-import java.util.*
 
 plugins {
     id("java")
@@ -13,48 +12,26 @@ plugins {
 // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
 val libs = the<LibrariesForLibs>()
 
-interface MavenPluginTestingExtension {
-    val mavenVersions: SetProperty<String>
-}
-
 val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesting")
 
-val m2Repository = layout.buildDirectory.dir("m2")
+val m2Repository: Provider<Directory> = layout.buildDirectory.dir("m2")
 val takariResourceDir: Provider<Directory> = layout.buildDirectory.dir("takari-test")
 
-val prepareTakariTestProperties by tasks.creating {
-    // installs our own plugin into the project-local m2 repository in ./build/m2
-    dependsOn("publishMavenPublicationToTestLocalRepository")
+val prepareTakariTestProperties by tasks.creating(TakariTestPropertiesTask::class) {
+    dependsOn(extension.publishToTestRepositoryTaskName())
 
-    val publication = provider { publishing.publications.withType<MavenPublication>().single() }
-
-    notCompatibleWithConfigurationCache("prototyping")
-    outputs.dir(takariResourceDir)
-    inputs.property("groupId", publication.map { it.groupId })
-    inputs.property("artifactId", publication.map { it.artifactId })
-    inputs.property("version", publication.map { it.version })
-
-    doFirst {
-        val testProperties = Properties()
-        testProperties.putAll(
-            mapOf(
-                "project.groupId" to publication.map { it.groupId }.get(),
-                "project.artifactId" to publication.map { it.artifactId }.get(),
-                "project.version" to publication.map { it.version }.get(),
-                "localRepository" to m2Repository.get().dir("repository").asFile.path,
-                "repository.0" to "<id>central</id><url>https://repo.maven.apache.org/maven2</url><releases><enabled>true</enabled></releases><snapshots><enabled>false</enabled></snapshots>",
-                "updateSnapshots" to "false"
-            )
-        )
-        takariResourceDir.get().file("test.properties").asFile.writer().use { testProperties.store(it, "") }
-    }
+    groupId = extension.pluginPublication.map { it.groupId }
+    artifactId = extension.pluginPublication.map { it.artifactId }
+    version = extension.pluginPublication.map { it.version }
+    testRepositoryPath = m2Repository.map { it.dir("repository").asFile.path }
+    outputDirectory = takariResourceDir
 }
 
 // Create a project-local file system m2 repository that will be used for all functional tests.
 publishing {
     repositories {
         maven {
-            name = "testLocal"
+            name = MavenPluginTestingExtension.TEST_REPOSITORY_NAME
             url = m2Repository.get().dir("repository").asFile.toURI()
         }
     }
@@ -72,10 +49,6 @@ val functionalTest by testing.suites.creating(JvmTestSuite::class) {
     targets {
         all {
             testTask {
-                outputs.dir(m2Repository)
-                doFirst {
-                    m2Repository.get().asFile.mkdirs()
-                }
                 // Takari needs at least Java 11
                 javaLauncher.set(javaToolchains.launcherFor {
                     languageVersion = JavaLanguageVersion.of(17)
