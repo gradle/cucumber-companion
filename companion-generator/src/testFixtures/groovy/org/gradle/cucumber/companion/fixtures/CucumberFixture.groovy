@@ -10,25 +10,25 @@ class CucumberFixture {
 
     @Memoized
     List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '') {
-        CucumberFeature.values().collect {
+        CucumberFeature.all().collect {
             ExpectedCompanionFile.create(it.featureName, it.packageName, suffix)
         }
     }
 
-    void createFeatureFiles(FileSystemFixture projectDir) {
+    void createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.all()) {
         projectDir.create {
             dir("src/test/resources") {
-                CucumberFeature.values().each {
+                features.each {
                     file(it.featureFilePath).text = it.featureFileContent
                 }
             }
         }
     }
 
-    void createStepFiles(FileSystemFixture projectDir) {
+    void createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.all()) {
         projectDir.create {
             dir("src/test/java") {
-                CucumberFeature.values().each {
+                features.each {
                     file(it.stepFilePath).text = it.stepFileContent
                 }
             }

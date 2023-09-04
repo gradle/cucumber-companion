@@ -206,6 +206,7 @@ enum CucumberFeature {
         '''.stripIndent(true)
     );
 
+    static final List<CucumberFeature> ALL_FEATURES = Collections.unmodifiableList(values() as List<CucumberFeature>)
 
     final String featureName
     final String packageName
@@ -234,10 +235,14 @@ enum CucumberFeature {
         this.stepFilePath = joinToPath(relativePath, featureName.replaceAll("[^a-zA-Z0-9_]", "") + "Steps.java")
     }
 
-    static String joinToPath(String path, String fileName) {
+    private static String joinToPath(String path, String fileName) {
         if (path == "") {
             return fileName
         }
         "$path/$fileName"
+    }
+
+    static List<CucumberFeature> all() {
+        ALL_FEATURES
     }
 }
