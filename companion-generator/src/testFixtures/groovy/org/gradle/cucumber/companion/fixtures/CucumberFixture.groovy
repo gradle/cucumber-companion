@@ -3,6 +3,7 @@ package org.gradle.cucumber.companion.fixtures
 import groovy.transform.Memoized
 import spock.util.io.FileSystemFixture
 
+@SuppressWarnings("GrMethodMayBeStatic") //
 class CucumberFixture {
 
     @Memoized

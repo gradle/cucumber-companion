@@ -1,9 +1,11 @@
 package org.gradle.cucumber.companion.maven
 
+import groovy.xml.XmlSlurper
 import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
 
@@ -64,18 +66,25 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseMavenFuncTest {
         result.log.each { println it }
 
         and:
-        workspace.resolve("target/surefires-reports")
+        def expectedCompanions = expectedCompanionFiles("Test")
+        expectedCompanions.forEach {
+            verifyAll(testReport(it)) {
+                Files.exists(it)
+                def testsuite = new XmlSlurper().parse(it)
+                testsuite.testcase.size() == 1
+            }
+        }
 
         where:
         distribution << distributions()
     }
 
-    private String safeName(String name) {
-        name.replaceAll(" ", "_")
-    }
-
     Path companionFile(ExpectedCompanionFile companion) {
         return workspace.resolve("target/generated-test-sources/cucumberCompanion/${companion.relativePath}")
+    }
+
+    Path testReport(ExpectedCompanionFile companion) {
+        workspace.resolve("target/surefire-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
     }
 
     private void createPom() {

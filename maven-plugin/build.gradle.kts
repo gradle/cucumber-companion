@@ -50,6 +50,7 @@ val functionalTest by testing.suites.getting(JvmTestSuite::class) {
     dependencies {
         implementation(platform(libs.groovy.bom.get().toString()))
         implementation(libs.groovy.nio)
+        implementation(libs.groovy.xml)
         implementation(testFixtures(projects.companionGenerator))
     }
 }
