@@ -22,8 +22,6 @@ mavenPlugin {
     artifactId.set(ourArtifactId)
 }
 
-val m2Repository = layout.buildDirectory.dir("m2")
-
 publishing {
     publications {
         val maven by creating(MavenPublication::class) {
