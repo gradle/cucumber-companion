@@ -7,7 +7,6 @@ import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 class GenerateCucumberCompanionMojoIntegrationTest extends BaseMavenFuncTest {
 
@@ -17,13 +16,6 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseMavenFuncTest {
 
     def setup() {
         pom = workspace.file("pom.xml")
-    }
-
-    private List<String> mavenHomes() {
-        return System.getProperties().entrySet().stream()
-            .filter { it.key.toString().startsWith("testContext.internal.mavenHome.") }
-            .map { it.value }
-            .collect(Collectors.toList())
     }
 
     def "generate-cucumber-companion-files mojo generates valid companion files"() {
