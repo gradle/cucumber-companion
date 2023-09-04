@@ -15,11 +15,15 @@ class Pom {
         plugins.add(new ArtifactCoordinates(groupId, artifactId, version, null, null, extra))
     }
 
+    def dependencyWithManagedVersion(String groupId, String artifactId, String scope = "compile") {
+        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, { "" }))
+    }
+
     def dependency(String groupId, String artifactId, String version = null, String scope = "compile") {
         dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, { "" }))
     }
 
-    def managedDependency(String groupId, String artifactId, String version = null, String scope = "compile", String type = null) {
+    def dependencyManagement(String groupId, String artifactId, String version = null, String scope = "compile", String type = null) {
         dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, { "" }))
     }
 
@@ -69,8 +73,8 @@ class Pom {
                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                 <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
 ${properties.empty ? '' :
-    "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join(System.lineSeparator())}"
-            }
+            "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join(System.lineSeparator())}"
+        }
             </properties>
 
             <build>
@@ -95,6 +99,6 @@ ${dependencies.collect { indent(4) + it.asDependency() }.join(System.lineSeparat
     }
 
     private String indent(int n) {
-        return " " * n
+        return " " * (n * 4)
     }
 }

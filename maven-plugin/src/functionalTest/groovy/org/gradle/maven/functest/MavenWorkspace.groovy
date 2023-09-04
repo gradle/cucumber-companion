@@ -31,13 +31,8 @@ class MavenWorkspace {
     }
 
     def pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
+        closure.delegate = pom
         closure.call(pom)
-        this
-    }
-
-    def layout(@DelegatesTo(value = DirectoryFixture.class, strategy = Closure.DELEGATE_FIRST)
-                   Closure<?> dirSpec) throws IOException {
-        this.dirSpec = dirSpec
         this
     }
 
