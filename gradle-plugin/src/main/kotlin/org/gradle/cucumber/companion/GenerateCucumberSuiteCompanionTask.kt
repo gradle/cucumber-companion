@@ -15,7 +15,6 @@ import kotlin.io.path.writeText
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
 
-
     @get:[Incremental InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
     abstract val cucumberFeatureSources: DirectoryProperty
 
@@ -33,10 +32,8 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
                     ChangeType.ADDED -> CompanionGenerator.create(companionFile)
                     ChangeType.MODIFIED -> CompanionGenerator.update(companionFile)
                     ChangeType.REMOVED -> Files.deleteIfExists(companionFile.destination)
-                    null -> {}
+                    else -> {}
                 }
         }
     }
-
-    private fun removeFeatureExtension(name: String) = name.substring(0, name.length - 8)
 }

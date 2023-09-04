@@ -19,6 +19,7 @@ dependencies {
     testFixturesApi(libs.groovy.nio)
     testFixturesApi(platform(libs.spock.bom.get().toString()))
     testFixturesApi(libs.spock.core)
+    testFixturesImplementation(libs.jetbrains.annotations)
 }
 
 
