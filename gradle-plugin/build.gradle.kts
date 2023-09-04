@@ -19,13 +19,6 @@ dependencies {
 
 testing {
     suites {
-        // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
-            // Use Kotlin Test test framework
-            useKotlinTest(libs.versions.kotlin)
-        }
-
-        // Create a new test suite
         val functionalTest by registering(JvmTestSuite::class) {
             useSpock(libs.versions.spock)
 
@@ -34,13 +27,6 @@ testing {
                 implementation(platform(libs.groovy.bom.get().toString()))
                 implementation(libs.groovy.nio)
                 implementation(testFixtures(projects.companionGenerator))
-            }
-
-            targets {
-                all {
-                    // This test suite should run after the built-in test suite has run its tests
-                    testTask.configure { shouldRunAfter(test) }
-                }
             }
         }
 
@@ -52,7 +38,7 @@ testing {
 
 gradlePlugin {
     // Define the plugin
-    val greeting by plugins.creating {
+    val cucumberCompanion by plugins.creating {
         id = "org.gradle.cucumber.companion"
         implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
     }
