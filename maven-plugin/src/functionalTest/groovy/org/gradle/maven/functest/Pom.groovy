@@ -2,10 +2,10 @@ package org.gradle.maven.functest
 
 class Pom {
 
-    def plugins = [] as List<ArtifactCoordinates>
-    def dependencies = [] as List<ArtifactCoordinates>
-    def dependencyManagement = [] as List<ArtifactCoordinates>
-    def properties = [:] as Map<String, String>
+    def plugins = [] as LinkedHashSet<ArtifactCoordinates>
+    def dependencies = [] as LinkedHashSet<ArtifactCoordinates>
+    def dependencyManagement = [] as LinkedHashSet<ArtifactCoordinates>
+    def properties = [:] as LinkedHashMap<String, String>
 
     def property(String property, String value) {
         properties.put(property, value)
@@ -27,7 +27,7 @@ class Pom {
         dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, { "" }))
     }
 
-    class ArtifactCoordinates {
+    final class ArtifactCoordinates {
         String groupId
         String artifactId
         String version
@@ -50,6 +50,16 @@ class Pom {
 
         def asPlugin() {
             return "<plugin>${toString()}</plugin>"
+        }
+
+        boolean equals(obj) {
+            return obj == this || obj instanceof ArtifactCoordinates
+                && groupId == (obj as ArtifactCoordinates).groupId
+                && artifactId == (obj as ArtifactCoordinates).artifactId
+        }
+
+        int hashCode() {
+            return Objects.hash(groupId, artifactId)
         }
 
         @Override
