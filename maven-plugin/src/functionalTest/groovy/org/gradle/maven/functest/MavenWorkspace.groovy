@@ -1,6 +1,5 @@
 package org.gradle.maven.functest
 
-import spock.util.io.DirectoryFixture
 import spock.util.io.FileSystemFixture
 
 import java.nio.file.Path
@@ -13,8 +12,8 @@ class MavenWorkspace {
     def pom = new Pom()
     boolean materialized
 
-    MavenWorkspace(FileSystemFixture workspace) {
-        this.workspace = workspace
+    MavenWorkspace(Path tempDir) {
+        this.workspace = new FileSystemFixture(tempDir)
         this.rootPom = workspace.resolve("pom.xml")
     }
 

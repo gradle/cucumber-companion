@@ -8,12 +8,6 @@ import spock.util.io.FileSystemFixture
 abstract class BaseMavenFuncTest extends Specification {
 
     @TempDir
-    FileSystemFixture tempWorkspace
-
     MavenWorkspace workspace
-
-    def setup() {
-        workspace = new MavenWorkspace(tempWorkspace)
-    }
 
 }
