@@ -31,7 +31,7 @@ class MavenWorkspace {
     }
 
     def pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-        closure.delegate = pom
+        closure.setDelegate(pom)
         closure.call(pom)
         this
     }
