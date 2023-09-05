@@ -29,29 +29,27 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
 
     def createProject(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
         workspace.pom {
-            property("maven.compiler.source", "1.8")
-            property("maven.compiler.target", "1.8")
-            plugin("org.apache.maven.plugins", "maven-clean-plugin", "3.3.1")
-            plugin("org.apache.maven.plugins", "maven-compiler-plugin", "3.11.0")
-            plugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
-            plugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
-            plugin("org.gradle.cucumber.companion", "cucumber-companion-plugin", '${it-project.version}') {
-                '''
-                    <executions>
-                        <execution>
-                            <id>generate-companion</id>
-                            <goals>
-                                <goal>generate-cucumber-companion-files</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                '''
+            addProperty("maven.compiler.source", "1.8")
+            addProperty("maven.compiler.target", "1.8")
+            addPlugin("org.apache.maven.plugins", "maven-clean-plugin", "3.3.1")
+            addPlugin("org.apache.maven.plugins", "maven-compiler-plugin", "3.11.0")
+            addPlugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
+            addPlugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
+            addPlugin("org.gradle.cucumber.companion", "cucumber-companion-plugin", '${it-project.version}') {
+                executions {
+                    execution {
+                        id("generate-companion")
+                        goals {
+                            goal("generate-cucumber-companion-files")
+                        }
+                    }
+                }
             }
-            dependencyManagement("org.junit", "junit-bom", JUNIT_VERSION, "import", "pom")
-            dependencyWithManagedVersion("org.junit.jupiter", "junit-jupiter", "test")
-            dependencyWithManagedVersion("org.junit.platform", "junit-platform-suite", "test")
-            dependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
-            dependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
+            addManagedDependency("org.junit", "junit-bom", JUNIT_VERSION)
+            addDependency("org.junit.jupiter", "junit-jupiter", null, "test")
+            addDependency("org.junit.platform", "junit-platform-suite", null, "test")
+            addDependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
+            addDependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
             it.with(pom)
         }
     }

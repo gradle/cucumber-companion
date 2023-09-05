@@ -1,7 +1,6 @@
 package org.gradle.cucumber.companion.maven
 
 import groovy.xml.XmlSlurper
-import org.gradle.maven.functest.MavenDistribution
 
 import java.nio.file.Files
 
