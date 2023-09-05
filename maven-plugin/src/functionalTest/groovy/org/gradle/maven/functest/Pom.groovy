@@ -1,32 +1,101 @@
 package org.gradle.maven.functest
 
-import groovy.transform.Memoized
+
+import groovy.xml.XmlSlurper
+import groovy.xml.XmlUtil
 
 class Pom {
+
+    private static final String BASE_POM_XML =
+        // language=XML
+        """\
+        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+
+            <groupId>tmp</groupId>
+            <artifactId>project-to-test</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <packaging>jar</packaging>
+        </project>
+    """
 
     def plugins = [] as LinkedHashSet<ArtifactCoordinates>
     def dependencies = [] as LinkedHashSet<ArtifactCoordinates>
     def dependencyManagement = [] as LinkedHashSet<ArtifactCoordinates>
     def properties = [:] as LinkedHashMap<String, String>
 
+    Pom() {
+        properties.putAll([
+            "project.build.sourceEncoding":"UTF-8",
+            "project.build.reportEncoding":"UTF-8"
+        ])
+    }
+
     def property(String property, String value) {
         properties.put(property, value)
     }
 
-    def plugin(String groupId, String artifactId, String version, Closure<?> extra = { "" }) {
+    def plugin(String groupId, String artifactId, String version, Closure<?> extra = null) {
         plugins.add(new ArtifactCoordinates(groupId, artifactId, version, null, null, extra))
     }
 
     def dependencyWithManagedVersion(String groupId, String artifactId, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, { "" }))
+        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, null))
     }
 
     def dependency(String groupId, String artifactId, String version = null, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, { "" }))
+        dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, null))
     }
 
     def dependencyManagement(String groupId, String artifactId, String version = null, String scope = "compile", String type = null) {
-        dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, { "" }))
+        dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, null))
+    }
+
+    @Override
+    String toString() {
+        def pomXml = new XmlSlurper(false, false).parseText(BASE_POM_XML)
+        pomXml.appendNode {
+            if (!this.properties.empty) {
+                properties {
+                    this.properties.collect { k, v -> "$k" { mkp.yield(v) } }
+                }
+            }
+
+            if (!this.dependencyManagement.empty) {
+                dependencyManagement {
+                    dependencies { deps ->
+                        this.dependencyManagement.each {
+                            deps.dependency { dep ->
+                                getOwner().with(it.markup())
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!this.dependencies.empty) {
+                dependencies { deps ->
+                    this.dependencies.each {
+                        deps.dependency { dep ->
+                            getOwner().with(it.markup())
+                        }
+                    }
+                }
+            }
+
+            if (!this.plugins.empty) {
+                build {
+                    plugins { plugs ->
+                        this.plugins.each {
+                            plugs.plugin { plug ->
+                                getOwner().with(it.markup())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return XmlUtil.serialize(pomXml)
     }
 
     final class ArtifactCoordinates {
@@ -46,12 +115,24 @@ class Pom {
             this.extra = extra
         }
 
-        def asDependency() {
-            return "<dependency>${toString()}</dependency>"
-        }
-
-        def asPlugin() {
-            return "<plugin>${toString()}</plugin>"
+        def markup() {
+            def result = {
+                groupId(this.groupId)
+                artifactId(this.artifactId)
+                if (this.version != null) {
+                    version(this.version)
+                }
+                if (this.scope != null) {
+                    scope(this.scope)
+                }
+                if (this.type != null) {
+                    type(this.type)
+                }
+            }
+            if (this.extra != null) {
+                return result.andThen(this.extra)
+            }
+            return result
         }
 
         boolean equals(obj) {
@@ -63,55 +144,6 @@ class Pom {
         int hashCode() {
             return Objects.hash(groupId, artifactId)
         }
-
-        @Override
-        String toString() {
-            return "<groupId>${groupId}</groupId><artifactId>${artifactId}</artifactId>${version != null ? "<version>${version}</version>" : ""}${scope != null ? "<scope>${scope}</scope>" : ""}${type != null ? "<type>${type}</type>" : ""}${extra.call()}"
-        }
     }
 
-    @Override
-    String toString() {
-        """\
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-
-            <groupId>tmp</groupId>
-            <artifactId>project-to-test</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <packaging>jar</packaging>
-
-            <properties>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
-${properties.empty ? '' :
-            "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join("\n")}"
-        }
-            </properties>
-
-            <build>
-                <plugins>
-${plugins.collect { indent(6) + it.asPlugin() }.join("\n")}
-                </plugins>
-            </build>
-            ${dependencyManagement.empty ? "" : """\
-            <dependencyManagement>
-                <dependencies>
-${dependencyManagement.collect { indent(5) + it.asDependency() }.join("\n")}
-                </dependencies>
-            </dependencyManagement>
-            """}
-            ${dependencies.empty ? "" : """\
-            <dependencies>
-${dependencies.collect { indent(4) + it.asDependency() }.join("\n")}
-            </dependencies>
-            """}
-        </project>
-        """.stripIndent(true)
-    }
-
-    @Memoized
-    private String indent(int n) {
-        return " " * (n * 4)
-    }
 }

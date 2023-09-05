@@ -36,16 +36,14 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             plugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
             plugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
             plugin("org.gradle.cucumber.companion", "cucumber-companion-plugin", '${it-project.version}') {
-                '''
-                    <executions>
-                        <execution>
-                            <id>generate-companion</id>
-                            <goals>
-                                <goal>generate-cucumber-companion-files</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                '''
+                executions {
+                    execution {
+                        id("generate-companion")
+                        goals {
+                            goal("generate-cucumber-companion-files")
+                        }
+                    }
+                }
             }
             dependencyManagement("org.junit", "junit-bom", JUNIT_VERSION, "import", "pom")
             dependencyWithManagedVersion("org.junit.jupiter", "junit-jupiter", "test")
