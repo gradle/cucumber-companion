@@ -83,25 +83,25 @@ class Pom {
                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                 <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
 ${properties.empty ? '' :
-            "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join(System.lineSeparator())}"
+            "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join("\n")}"
         }
             </properties>
 
             <build>
                 <plugins>
-${plugins.collect { indent(6) + it.asPlugin() }.join(System.lineSeparator())}
+${plugins.collect { indent(6) + it.asPlugin() }.join("\n")}
                 </plugins>
             </build>
             ${dependencyManagement.empty ? "" : """\
             <dependencyManagement>
                 <dependencies>
-${dependencyManagement.collect { indent(5) + it.asDependency() }.join(System.lineSeparator())}
+${dependencyManagement.collect { indent(5) + it.asDependency() }.join("\n")}
                 </dependencies>
             </dependencyManagement>
             """}
             ${dependencies.empty ? "" : """\
             <dependencies>
-${dependencies.collect { indent(4) + it.asDependency() }.join(System.lineSeparator())}
+${dependencies.collect { indent(4) + it.asDependency() }.join("\n")}
             </dependencies>
             """}
         </project>
