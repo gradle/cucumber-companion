@@ -28,6 +28,13 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     CucumberFixture cucumberFixture = new CucumberFixture()
     CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 
+    @Delegate
+    TestContextRunner runner
+
+    def setup() {
+        runner = new TestContextRunner(workspace.currentPath)
+    }
+
     def "companion task can be registered"() {
         given:
         setupPlugin(buildScriptLanguage)
@@ -71,7 +78,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         when: "running the generate task"
         def result = run("testGenerateCucumberSuiteCompanion")
 
-        then: "feature compantion is present"
+        then: "feature companion is present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
         expectedCompanionFiles('', [CucumberFeature.ProductSearch]).forEach {
@@ -174,15 +181,5 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 }
             }
             """.stripIndent(true)
-    }
-
-    BuildResult run(String... arguments) {
-        def runner = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withProjectDir(workspace.currentPath.toFile())
-            .withArguments(arguments)
-
-        return runner.build()
     }
 }
