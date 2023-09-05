@@ -1,5 +1,7 @@
 package org.gradle.maven.functest
 
+import groovy.transform.Memoized
+
 class Pom {
 
     def plugins = [] as LinkedHashSet<ArtifactCoordinates>
@@ -108,6 +110,7 @@ ${dependencies.collect { indent(4) + it.asDependency() }.join("\n")}
         """.stripIndent(true)
     }
 
+    @Memoized
     private String indent(int n) {
         return " " * (n * 4)
     }
