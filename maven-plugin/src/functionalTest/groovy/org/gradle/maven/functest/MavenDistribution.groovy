@@ -1,6 +1,6 @@
 package org.gradle.maven.functest
 
-
+import groovy.transform.Memoized
 import io.takari.maven.testing.executor.MavenExecutionResult
 import io.takari.maven.testing.executor.MavenRuntime
 
@@ -13,6 +13,7 @@ class MavenDistribution {
 
     private static final String TEST_CONTEXT_PREFIX = "testContext.internal.mavenHome."
 
+    @Memoized
     static List<MavenDistribution> allDistributions() {
         return System.getProperties().entrySet().stream()
             .filter { it.key.toString().startsWith(TEST_CONTEXT_PREFIX) }
@@ -33,7 +34,7 @@ class MavenDistribution {
     MavenExecutionResult execute(MavenWorkspace workspace, String... goals) {
         workspace.ensureMaterialized()
         def forkedRunner = MavenRuntime.forkedBuilder(mavenHome).build()
-        return forkedRunner.forProject(workspace.path.toFile()).execute(goals)
+        return forkedRunner.forProject(workspace.fileSystem.currentPath.toFile()).execute(goals)
     }
 
     String getVersion() {

@@ -6,38 +6,26 @@ import java.nio.file.Path
 
 class MavenWorkspace {
 
-    FileSystemFixture workspace
+    FileSystemFixture fileSystem
     Path rootPom
     Closure<?> dirSpec = {}
-    def pom = new Pom()
+    Pom pom = new Pom()
     boolean materialized
 
     MavenWorkspace(Path tempDir) {
-        this.workspace = new FileSystemFixture(tempDir)
-        this.rootPom = workspace.resolve("pom.xml")
+        this.fileSystem = new FileSystemFixture(tempDir)
+        this.rootPom = fileSystem.resolve("pom.xml")
     }
 
-    Path getPath() {
-        return workspace.currentPath
-    }
 
-    FileSystemFixture getFileSystem() {
-        return workspace
-    }
-
-    def resolve(String path) {
-        return workspace.resolve(path)
-    }
-
-    def pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-        closure.setDelegate(pom)
-        closure.call(pom)
+    MavenWorkspace pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
+        pom.with(closure)
         this
     }
 
     def ensureMaterialized() {
         if (!materialized) {
-            workspace.create(dirSpec)
+            fileSystem.create(dirSpec)
             rootPom.text = pom.toString()
             materialized = true
         }

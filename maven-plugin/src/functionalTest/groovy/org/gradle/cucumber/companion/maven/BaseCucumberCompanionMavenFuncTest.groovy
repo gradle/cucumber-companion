@@ -18,11 +18,11 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
     CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 
     Path companionFile(ExpectedCompanionFile companion) {
-        return workspace.resolve("target/generated-test-sources/cucumberCompanion/${companion.relativePath}")
+        return workspace.fileSystem.resolve("target/generated-test-sources/cucumberCompanion/${companion.relativePath}")
     }
 
     Path testReport(ExpectedCompanionFile companion) {
-        workspace.resolve("target/surefire-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
+        workspace.fileSystem.resolve("target/surefire-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
     }
 
     def createProject(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
@@ -50,7 +50,7 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             dependencyWithManagedVersion("org.junit.platform", "junit-platform-suite", "test")
             dependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
             dependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
-            pom.call(it)
+            it.with(pom)
         }
     }
 }
