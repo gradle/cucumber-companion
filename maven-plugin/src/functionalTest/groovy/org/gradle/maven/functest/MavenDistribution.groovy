@@ -31,9 +31,11 @@ class MavenDistribution {
         this.mavenHome = mavenHome
     }
 
-    MavenExecutionResult execute(MavenWorkspace workspace, String... goals) {
+    MavenExecutionResult execute(MavenWorkspace workspace, JDK jdk, String... goals) {
         workspace.ensureMaterialized()
-        def forkedRunner = MavenRuntime.forkedBuilder(mavenHome).build()
+        def forkedRunner = MavenRuntime.forkedBuilder(mavenHome)
+            .withEnvironment(["JAVA_HOME": jdk.javaHome.absolutePath])
+            .build()
         return forkedRunner.forProject(workspace.fileSystem.currentPath.toFile()).execute(goals)
     }
 

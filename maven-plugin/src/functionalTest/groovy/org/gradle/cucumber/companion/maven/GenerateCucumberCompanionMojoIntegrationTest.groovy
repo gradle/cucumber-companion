@@ -1,20 +1,28 @@
 package org.gradle.cucumber.companion.maven
 
-import org.gradle.maven.functest.MavenDistribution
 import groovy.xml.XmlSlurper
+import org.gradle.maven.functest.JDK
+import org.gradle.maven.functest.MavenDistribution
 
 import java.nio.file.Files
 
 class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanionMavenFuncTest {
 
+    static final TestMatrix MATRIX = TestMatrix.of(
+        JDK.ifAvailable(8, 11, 17),
+        MavenDistribution.allDistributions(),
+        ["3.1.2"])
+
     def "generate-cucumber-companion-files mojo generates valid companion file"() {
         given:
-        createProject()
+        createProject() {
+            plugin("org.apache.maven.plugins", "maven-surefire-plugin", testCase.surefireVersion)
+        }
         cucumberFixture.createFeatureFiles(workspace.fileSystem)
         cucumberFixture.createStepFiles(workspace.fileSystem)
 
         when:
-        def result = maven.execute(workspace, "test")
+        def result = testCase.maven.execute(workspace, testCase.javaVersion, "test")
 
         then:
         noExceptionThrown()
@@ -28,7 +36,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         }
 
         where:
-        maven << MavenDistribution.allDistributions()
+        testCase << MATRIX.executions()
     }
 
     def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
@@ -38,7 +46,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         cucumberFixture.createStepFiles(workspace.fileSystem)
 
         when:
-        def result = maven.execute(workspace, "test")
+        def result = testCase.maven.execute(workspace, JDK.current(), "test")
 
         then:
         noExceptionThrown()
@@ -55,7 +63,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         }
 
         where:
-        maven << MavenDistribution.allDistributions()
+        testCase << MATRIX.executions()
     }
 
 }

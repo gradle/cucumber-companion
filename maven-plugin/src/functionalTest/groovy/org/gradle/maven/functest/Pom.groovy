@@ -54,14 +54,23 @@ class Pom {
             return "<plugin>${toString()}</plugin>"
         }
 
-        boolean equals(obj) {
-            return obj == this || obj instanceof ArtifactCoordinates
-                && groupId == (obj as ArtifactCoordinates).groupId
-                && artifactId == (obj as ArtifactCoordinates).artifactId
+        boolean equals(o) {
+            if (this.is(o)) return true
+            if (o == null || getClass() != o.class) return false
+
+            ArtifactCoordinates that = (ArtifactCoordinates) o
+
+            if (artifactId != that.artifactId) return false
+            if (groupId != that.groupId) return false
+
+            return true
         }
 
         int hashCode() {
-            return Objects.hash(groupId, artifactId)
+            int result
+            result = (groupId != null ? groupId.hashCode() : 0)
+            result = 31 * result + (artifactId != null ? artifactId.hashCode() : 0)
+            return result
         }
 
         @Override
