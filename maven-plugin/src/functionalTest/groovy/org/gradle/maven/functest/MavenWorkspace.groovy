@@ -27,8 +27,6 @@ class MavenWorkspace {
         if (!materialized) {
             fileSystem.create(dirSpec)
             rootPom.text = pom.toString()
-
-            println rootPom.text
             materialized = true
         }
     }
