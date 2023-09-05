@@ -4,6 +4,7 @@ import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import org.gradle.maven.functest.BaseMavenFuncTest
+import org.gradle.maven.functest.Pom
 
 import java.nio.file.Path
 
@@ -24,18 +25,14 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
         workspace.resolve("target/surefire-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
     }
 
-    def createProject(
-        String junit5Version = JUNIT_VERSION,
-        String cucumberVersion = CUCUMBER_VERSION,
-        String surefireVersion = SUREFIRE_VERSION) {
-
+    def createProject(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
         workspace.pom {
             property("maven.compiler.source", "1.8")
             property("maven.compiler.target", "1.8")
             plugin("org.apache.maven.plugins", "maven-clean-plugin", "3.3.1")
             plugin("org.apache.maven.plugins", "maven-compiler-plugin", "3.11.0")
             plugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
-            plugin("org.apache.maven.plugins", "maven-surefire-plugin", surefireVersion)
+            plugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
             plugin("org.gradle.cucumber.companion", "cucumber-companion-plugin", '${it-project.version}') {
                 '''
                     <executions>
@@ -48,11 +45,12 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
                     </executions>
                 '''
             }
-            dependencyManagement("org.junit", "junit-bom", junit5Version, "import", "pom")
+            dependencyManagement("org.junit", "junit-bom", JUNIT_VERSION, "import", "pom")
             dependencyWithManagedVersion("org.junit.jupiter", "junit-jupiter", "test")
             dependencyWithManagedVersion("org.junit.platform", "junit-platform-suite", "test")
-            dependency("io.cucumber", "cucumber-java", cucumberVersion, "test")
-            dependency("io.cucumber", "cucumber-junit-platform-engine", cucumberVersion, "test")
+            dependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
+            dependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
+            pom.call(it)
         }
     }
 }
