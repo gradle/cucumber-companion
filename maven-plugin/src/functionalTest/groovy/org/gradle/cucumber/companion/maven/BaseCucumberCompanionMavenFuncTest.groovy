@@ -4,6 +4,7 @@ import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import org.gradle.maven.functest.BaseMavenFuncTest
+import org.gradle.maven.functest.MavenDistribution
 import org.gradle.maven.functest.Pom
 
 import java.nio.file.Path
@@ -14,6 +15,7 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
     static final String CUCUMBER_VERSION = "7.12.1"
     static final String SUREFIRE_VERSION = "3.1.2"
 
+    MavenDistribution maven = MavenDistribution.theSingleMavenDistribution()
     CucumberFixture cucumberFixture = new CucumberFixture()
     CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 

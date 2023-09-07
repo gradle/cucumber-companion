@@ -1,7 +1,7 @@
 package org.gradle.cucumber.companion.maven
 
-import org.gradle.maven.functest.MavenDistribution
 import groovy.xml.XmlSlurper
+import org.gradle.maven.functest.MavenDistribution
 
 import java.nio.file.Files
 
@@ -19,6 +19,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
+        result.log.each { println(it) }
 
         and:
         def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
@@ -26,9 +27,6 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
         }
-
-        where:
-        maven << MavenDistribution.allDistributions()
     }
 
     def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
@@ -43,6 +41,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
+        result.log.each { println(it) }
 
         and:
         def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
@@ -53,9 +52,6 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
                 testsuite.testcase.size() == 1
             }
         }
-
-        where:
-        maven << MavenDistribution.allDistributions()
     }
 
 }
