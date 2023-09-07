@@ -4,6 +4,8 @@ package org.gradle.maven.functest
 import groovy.xml.XmlSlurper
 import groovy.xml.XmlUtil
 
+import java.nio.charset.Charset
+
 class Pom {
 
     private static final String BASE_POM_XML =
@@ -26,8 +28,8 @@ class Pom {
 
     Pom() {
         properties.putAll([
-            "project.build.sourceEncoding": "UTF-8",
-            "project.build.reportEncoding": "UTF-8"
+            "project.build.sourceEncoding": Charset.defaultCharset().name(),
+            "project.build.reportEncoding": Charset.defaultCharset().name()
         ])
     }
 
@@ -66,7 +68,7 @@ class Pom {
                     dependencies { deps ->
                         this.dependencyManagement.each {
                             deps.dependency { dep ->
-                                getOwner().with(it.markup())
+                                mkp.yield(it.markup())
                             }
                         }
                     }
@@ -77,7 +79,7 @@ class Pom {
                 dependencies { deps ->
                     this.dependencies.each {
                         deps.dependency { dep ->
-                            getOwner().with(it.markup())
+                            mkp.yield(it.markup())
                         }
                     }
                 }
@@ -88,7 +90,7 @@ class Pom {
                     plugins { plugs ->
                         this.plugins.each {
                             plugs.plugin { plug ->
-                                getOwner().with(it.markup())
+                                mkp.yield(it.markup())
                             }
                         }
                     }

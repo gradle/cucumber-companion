@@ -17,7 +17,6 @@ class MavenWorkspace {
         this.rootPom = fileSystem.resolve("pom.xml")
     }
 
-
     MavenWorkspace pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
         pom.with(closure)
         this
@@ -30,5 +29,4 @@ class MavenWorkspace {
             materialized = true
         }
     }
-
 }
