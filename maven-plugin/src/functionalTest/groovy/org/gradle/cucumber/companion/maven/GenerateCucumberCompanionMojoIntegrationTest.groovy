@@ -1,7 +1,7 @@
 package org.gradle.cucumber.companion.maven
 
-import org.gradle.maven.functest.MavenDistribution
 import groovy.xml.XmlSlurper
+import org.gradle.maven.functest.MavenDistribution
 
 import java.nio.file.Files
 
@@ -19,6 +19,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
+        result.log.each { println(it) }
 
         and:
         def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
@@ -43,6 +44,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         then:
         noExceptionThrown()
         result.assertErrorFreeLog()
+        result.log.each { println(it) }
 
         and:
         def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
