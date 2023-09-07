@@ -35,20 +35,20 @@ class Pom {
         properties.put(property, value)
     }
 
-    def plugin(String groupId, String artifactId, String version, Closure<?> extra = null) {
+    def plugin(String groupId, String artifactId, String version, Closure<?> extra = {}) {
         plugins.add(new ArtifactCoordinates(groupId, artifactId, version, null, null, extra))
     }
 
     def dependencyWithManagedVersion(String groupId, String artifactId, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, null))
+        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, {}))
     }
 
     def dependency(String groupId, String artifactId, String version = null, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, null))
+        dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, {}))
     }
 
     def dependencyManagement(String groupId, String artifactId, String version = null, String scope = "compile", String type = null) {
-        dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, null))
+        dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, {}))
     }
 
     @Override
@@ -116,17 +116,13 @@ class Pom {
         }
 
         def markup() {
-            def result = {
+            return {
                 groupId(this.groupId)
                 artifactId(this.artifactId)
                 this.version?.tap { version(it) }
                 this.scope?.tap { scope(it) }
                 this.type?.tap { type(it) }
-            }
-            if (this.extra != null) {
-                return result.andThen(this.extra)
-            }
-            return result
+            }.andThen(this.extra)
         }
 
         boolean equals(obj) {
