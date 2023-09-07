@@ -26,8 +26,8 @@ class Pom {
 
     Pom() {
         properties.putAll([
-            "project.build.sourceEncoding":"UTF-8",
-            "project.build.reportEncoding":"UTF-8"
+            "project.build.sourceEncoding": "UTF-8",
+            "project.build.reportEncoding": "UTF-8"
         ])
     }
 
@@ -119,15 +119,9 @@ class Pom {
             def result = {
                 groupId(this.groupId)
                 artifactId(this.artifactId)
-                if (this.version != null) {
-                    version(this.version)
-                }
-                if (this.scope != null) {
-                    scope(this.scope)
-                }
-                if (this.type != null) {
-                    type(this.type)
-                }
+                this.version?.tap { version(it) }
+                this.scope?.tap { scope(it) }
+                this.type?.tap { type(it) }
             }
             if (this.extra != null) {
                 return result.andThen(this.extra)
