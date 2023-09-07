@@ -58,10 +58,10 @@ val allCrossVersionTests =  crossVersions.map {
     }
 }
 
-tasks.register("allCrossVersionTests") {
+tasks.register("allGradleCrossVersionTests") {
     dependsOn(allCrossVersionTests)
     group = "Cross Version"
-    description = "Runs all ${allCrossVersionTests.size} cross version test tasks"
+    description = "Runs all ${allCrossVersionTests.size} gradle cross version test tasks"
 }
 
 gradlePlugin {

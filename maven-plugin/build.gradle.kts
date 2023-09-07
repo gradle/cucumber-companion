@@ -56,10 +56,9 @@ val functionalTest by testing.suites.getting(JvmTestSuite::class) {
 }
 
 mavenPluginTesting {
-    mavenVersions = setOf("3.8.6", "3.8.7", "3.9.1")
+    mavenVersions = setOf(libs.versions.mavenMinCompatible.get(), "3.8.7", "3.9.1")
     pluginPublication = publishing.publications.named<MavenPublication>("maven")
 }
-
 
 // adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files
 project.afterEvaluate {
@@ -67,7 +66,8 @@ project.afterEvaluate {
     tasks.named<ShadowJar>("shadowJar").configure {
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
     }
-    sourceSet.java.srcDir(tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })
+    sourceSet.java.srcDir(
+        tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })
 }
 
 listOf("generateMavenPluginDescriptor", "generateMavenPluginHelpMojoSources").forEach {

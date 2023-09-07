@@ -46,22 +46,47 @@ val functionalTest by testing.suites.creating(JvmTestSuite::class) {
     sources {
         output.dir(mapOf("builtBy" to prepareTakariTestProperties), takariResourceDir)
     }
-    targets {
-        all {
-            testTask {
-                // Takari needs at least Java 11
-                javaLauncher.set(javaToolchains.launcherFor {
-                    languageVersion = JavaLanguageVersion.of(17)
-                })
-                environment("CONTINUOUS_INTEGRATION", true) // takari will print the log on error if this is set
-                options {
-                    val mavenDistributions = project.the<MavenDistributionExtension>()
-                    extension.mavenVersions.get().forEach { mavenVersion ->
-                        val mavenDistribution = mavenDistributions.versions.maybeCreate(mavenVersion)
-                        jvmArgumentProviders += mavenDistribution
-                    }
+}
+
+tasks.named<Task>("check") { dependsOn(functionalTest) }
+
+val allMavenCrossVersionTests = extension.mavenVersions
+        .map { mavenVersions ->
+            mavenVersions.map { mavenVersion ->
+                val mavenDistributions = project.the<MavenDistributionExtension>()
+
+                tasks.register<Test>("functionalTest_maven_${mavenVersion}") {
+                    val templateTask = functionalTestTask.get()
+                    classpath = templateTask.classpath
+                    testClassesDirs = templateTask.testClassesDirs
+                    useJUnitPlatform()
+                    group = "Cross Version"
+                    description = "Test with Maven $mavenVersion"
+
+                    javaLauncher.set(templateTask.javaLauncher)
+                    environment(templateTask.environment)
+
+                    val mavenDistribution = mavenDistributions.versions.maybeCreate(mavenVersion)
+                    jvmArgumentProviders += mavenDistribution
                 }
             }
         }
-    }
+
+
+val functionalTestTask = tasks.named<Test>("functionalTest") {
+    // Takari needs at least Java 11
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    })
+    environment("CONTINUOUS_INTEGRATION", true) // takari will print the log on error if this is set
+
+    val mavenDistributions = project.the<MavenDistributionExtension>()
+    val mavenDistribution = mavenDistributions.versions.maybeCreate(libs.versions.mavenMinCompatible.get())
+    jvmArgumentProviders += mavenDistribution
+}
+
+tasks.register("allMavenCrossVersionTests") {
+    dependsOn(allMavenCrossVersionTests)
+    group = "Cross Version"
+    description = "Runs all maven cross version test tasks"
 }
