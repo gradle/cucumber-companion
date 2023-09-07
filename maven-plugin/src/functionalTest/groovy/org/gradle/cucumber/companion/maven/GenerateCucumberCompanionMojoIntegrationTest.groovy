@@ -27,9 +27,6 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
         }
-
-        where:
-        maven << MavenDistribution.allDistributions()
     }
 
     def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
@@ -55,9 +52,6 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
                 testsuite.testcase.size() == 1
             }
         }
-
-        where:
-        maven << MavenDistribution.allDistributions()
     }
 
 }

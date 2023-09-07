@@ -23,6 +23,10 @@ class MavenDistribution {
             .collect(Collectors.toList())
     }
 
+    static MavenDistribution theSingleMavenDistribution() {
+        return allDistributions().get(0)
+    }
+
     private final File mavenHome
 
     MavenDistribution(File mavenHome) {
