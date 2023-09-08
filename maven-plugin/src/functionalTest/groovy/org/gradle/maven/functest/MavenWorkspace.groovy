@@ -9,14 +9,13 @@ class MavenWorkspace {
     FileSystemFixture fileSystem
     Path rootPom
     Closure<?> dirSpec = {}
-    Pom pom = new Pom()
+    Pom pom = new Pom("func-test")
     boolean materialized
 
     MavenWorkspace(Path tempDir) {
         this.fileSystem = new FileSystemFixture(tempDir)
         this.rootPom = fileSystem.resolve("pom.xml")
     }
-
 
     MavenWorkspace pom(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
         pom.with(closure)
@@ -30,5 +29,4 @@ class MavenWorkspace {
             materialized = true
         }
     }
-
 }

@@ -1,117 +1,149 @@
 package org.gradle.maven.functest
 
-import groovy.transform.Memoized
+import groovy.namespace.QName
+import groovy.transform.CompileStatic
+import groovy.xml.MarkupBuilder
+import groovy.xml.XmlParser
 
-class Pom {
+import java.nio.charset.Charset
 
-    def plugins = [] as LinkedHashSet<ArtifactCoordinates>
-    def dependencies = [] as LinkedHashSet<ArtifactCoordinates>
-    def dependencyManagement = [] as LinkedHashSet<ArtifactCoordinates>
-    def properties = [:] as LinkedHashMap<String, String>
+@CompileStatic
+final class Pom extends XmlTree {
 
-    def property(String property, String value) {
-        properties.put(property, value)
-    }
+    public static final String DEFAULT_GROUP_ID = 'com.gradle'
+    public static final String DEFAULT_VERSION = '0.0'
 
-    def plugin(String groupId, String artifactId, String version, Closure<?> extra = { "" }) {
-        plugins.add(new ArtifactCoordinates(groupId, artifactId, version, null, null, extra))
-    }
+    private static final QName GROUP_ID_QNAME = new QName('groupId')
+    private static final QName ARTIFACT_ID_QNAME = new QName('artifactId')
+    private static final QName VERSION_QNAME = new QName('version')
+    private static final QName SCOPE_QNAME = new QName('scope')
+    private static final QName TYPE_QNAME = new QName('type')
 
-    def dependencyWithManagedVersion(String groupId, String artifactId, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, null, scope, null, { "" }))
-    }
-
-    def dependency(String groupId, String artifactId, String version = null, String scope = "compile") {
-        dependencies.add(new ArtifactCoordinates(groupId, artifactId, version, scope, null, { "" }))
-    }
-
-    def dependencyManagement(String groupId, String artifactId, String version = null, String scope = "compile", String type = null) {
-        dependencyManagement.add(new ArtifactCoordinates(groupId, artifactId, version, scope, type, { "" }))
-    }
-
-    final class ArtifactCoordinates {
-        String groupId
-        String artifactId
-        String version
-        String scope
-        String type
-        Closure<?> extra
-
-        ArtifactCoordinates(String groupId, String artifactId, String version, String scope, String type, Closure<?> extra) {
-            this.groupId = groupId
-            this.artifactId = artifactId
-            this.version = version
-            this.scope = scope
-            this.type = type
-            this.extra = extra
-        }
-
-        def asDependency() {
-            return "<dependency>${toString()}</dependency>"
-        }
-
-        def asPlugin() {
-            return "<plugin>${toString()}</plugin>"
-        }
-
-        boolean equals(obj) {
-            return obj == this || obj instanceof ArtifactCoordinates
-                && groupId == (obj as ArtifactCoordinates).groupId
-                && artifactId == (obj as ArtifactCoordinates).artifactId
-        }
-
-        int hashCode() {
-            return Objects.hash(groupId, artifactId)
-        }
-
-        @Override
-        String toString() {
-            return "<groupId>${groupId}</groupId><artifactId>${artifactId}</artifactId>${version != null ? "<version>${version}</version>" : ""}${scope != null ? "<scope>${scope}</scope>" : ""}${type != null ? "<type>${type}</type>" : ""}${extra.call()}"
-        }
-    }
-
-    @Override
-    String toString() {
+    private static String initialPom(String artifactId, String version, String packaging) {
         """\
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-
-            <groupId>tmp</groupId>
-            <artifactId>project-to-test</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <packaging>jar</packaging>
-
-            <properties>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <project.build.reportEncoding>UTF-8</project.build.reportEncoding>
-${properties.empty ? '' :
-            "${properties.entrySet().collect { indent(4) + "<${it.key}>${it.value}</${it.key}>" }.join("\n")}"
-        }
-            </properties>
-
-            <build>
-                <plugins>
-${plugins.collect { indent(6) + it.asPlugin() }.join("\n")}
-                </plugins>
-            </build>
-            ${dependencyManagement.empty ? "" : """\
-            <dependencyManagement>
-                <dependencies>
-${dependencyManagement.collect { indent(5) + it.asDependency() }.join("\n")}
-                </dependencies>
-            </dependencyManagement>
-            """}
-            ${dependencies.empty ? "" : """\
-            <dependencies>
-${dependencies.collect { indent(4) + it.asDependency() }.join("\n")}
-            </dependencies>
-            """}
-        </project>
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>${DEFAULT_GROUP_ID}</groupId>
+                <artifactId>${artifactId}</artifactId>
+                ${packaging ? "<packaging>$packaging</packaging>" : ''}
+                <version>${version}</version>
+                <properties>
+                    <project.build.sourceEncoding>${Charset.defaultCharset().name()}</project.build.sourceEncoding>
+                    <project.build.reportEncoding>${Charset.defaultCharset().name()}</project.build.reportEncoding>
+                </properties>
+            </project>
         """.stripIndent(true)
     }
 
-    @Memoized
-    private String indent(int n) {
-        return " " * (n * 4)
+    Pom(String artifactId, String version = DEFAULT_VERSION, String packaging = 'jar') {
+        super(new XmlParser().parseText(initialPom(artifactId, version, packaging)))
     }
+
+    Pom addProperty(String name, String value = null) {
+        addXmlAt('properties', value != null ? "<$name>$value</$name>" : "<$name/>")
+        return this
+    }
+
+    Pom addPlugin(String groupId, String artifactId, String version = null, @DelegatesTo(MarkupBuilder) Closure closure) {
+        addPlugin(groupId, artifactId, version, runOnMarkupBuilder(closure))
+    }
+
+    Pom addPlugin(String groupId, String artifactId, String version = null, String config = "") {
+        Node plugin = findPlugin(groupId, artifactId)
+        if (plugin) {
+            if (version) {
+                assert plugin[VERSION_QNAME].text() == version
+            }
+            if (config) {
+                mergeXmlAt(plugin, config)
+            }
+        } else {
+            addXmlAt('build/plugins', """\
+                <plugin>
+                    <groupId>$groupId</groupId>
+                    <artifactId>$artifactId</artifactId>
+                    ${version ? "<version>$version</version>" : ""}
+                    $config
+                </plugin>
+            """.stripMargin())
+        }
+        return this
+    }
+
+    private Node findManagedDependency(String groupId, String artifactId) {
+        rootNode["dependencyManagement"]["dependencies"]["dependency"].find { dependency ->
+            (dependency as Node)[GROUP_ID_QNAME].text() == groupId && (dependency as Node)[ARTIFACT_ID_QNAME].text() == artifactId
+        } as Node
+    }
+
+    private Node findDependency(String groupId, String artifactId) {
+        rootNode["dependencies"]["dependency"].find { dependency ->
+            (dependency as Node)[GROUP_ID_QNAME].text() == groupId && (dependency as Node)[ARTIFACT_ID_QNAME].text() == artifactId
+        } as Node
+    }
+
+    private Node findPlugin(String groupId, String artifactId) {
+        rootNode["build"]["plugins"]["plugin"].find { plugin ->
+            (plugin as Node)[GROUP_ID_QNAME].text() == groupId && (plugin as Node)[ARTIFACT_ID_QNAME].text() == artifactId
+        } as Node
+    }
+
+    Pom addManagedDependency(String groupId, String artifactId, String version, String scope = 'import', String type = "pom", boolean checkForExistingDependency = true, String config = "") {
+        Node dependency = findManagedDependency(groupId, artifactId)
+
+        if (dependency && checkForExistingDependency) {
+            assert dependency[VERSION_QNAME].text() == version
+            assert dependency[SCOPE_QNAME].text() == scope
+
+            if (type) {
+                assert dependency[TYPE_QNAME].text() == type
+            }
+
+            if (config) {
+                mergeXmlAt(dependency, config)
+            }
+        } else {
+            addXmlAt('dependencyManagement/dependencies', """\
+            <dependency>
+                <groupId>$groupId</groupId>
+                <artifactId>$artifactId</artifactId>
+                ${version ? "<version>$version</version>" : ""}
+                <scope>$scope</scope>
+                ${type ? "<type>$type</type>" : ""}
+                $config
+            </dependency>""".stripMargin())
+        }
+
+        return this
+    }
+
+    Pom addDependency(String groupId, String artifactId, String version, String scope = 'compile', String type = "", boolean checkForExistingDependency = true, String config = "") {
+        Node dependency = findDependency(groupId, artifactId)
+
+        if (dependency && checkForExistingDependency) {
+            assert dependency[VERSION_QNAME].text() == version
+            assert dependency[SCOPE_QNAME].text() == scope
+
+            if (type) {
+                assert dependency[TYPE_QNAME].text() == type
+            }
+
+            if (config) {
+                mergeXmlAt(dependency, config)
+            }
+        } else {
+            addXmlAt('dependencies', """\
+            <dependency>
+                <groupId>$groupId</groupId>
+                <artifactId>$artifactId</artifactId>
+                ${version ? "<version>$version</version>" : ""}
+                <scope>$scope</scope>
+                ${type ? "<type>$type</type>" : ""}
+                $config
+            </dependency>""".stripMargin())
+        }
+
+        return this
+    }
+
 }
