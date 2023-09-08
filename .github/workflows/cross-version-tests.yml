@@ -1,4 +1,4 @@
-name: 'Verify'
+name: 'Cross Version Tests'
 
 on:
     push:
@@ -7,14 +7,14 @@ on:
     pull_request:
 
 jobs:
-    build-and-verify:
+    cross-version-tests:
         runs-on: 'ubuntu-latest'
         steps:
             - uses: actions/checkout@v3
             - name: "Setup Build Environment"
               uses: ./.github/actions/setup-environment
 
-            - name: 'Build Cucumber-Companion'
+            - name: 'Run all Cross Version Tests'
               uses: gradle/gradle-build-action@v2
               with:
-                  arguments: "check"
+                  arguments: "allMavenCrossVersionTests allGradleCrossVersionTests"
