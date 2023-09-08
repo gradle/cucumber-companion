@@ -16,6 +16,7 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
     static final String SUREFIRE_VERSION = "3.1.2"
 
     MavenDistribution maven = MavenDistribution.theSingleMavenDistribution()
+    @Delegate
     CucumberFixture cucumberFixture = new CucumberFixture()
     CompanionAssertions companionAssertions = new CompanionAssertions(this::companionFile)
 

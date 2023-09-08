@@ -1,7 +1,6 @@
 package org.gradle.cucumber.companion.maven
 
 import groovy.xml.XmlSlurper
-import org.gradle.maven.functest.MavenDistribution
 
 import java.nio.file.Files
 
@@ -10,8 +9,8 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
     def "generate-cucumber-companion-files mojo generates valid companion file"() {
         given:
         createProject()
-        cucumberFixture.createFeatureFiles(workspace.fileSystem)
-        cucumberFixture.createStepFiles(workspace.fileSystem)
+        createFeatureFiles(workspace.fileSystem)
+        createStepFiles(workspace.fileSystem)
 
         when:
         def result = maven.execute(workspace, "test")
@@ -22,7 +21,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
+        def expectedCompanions = expectedCompanionFiles("Test")
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -32,8 +31,8 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
     def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
         given:
         createProject()
-        cucumberFixture.createFeatureFiles(workspace.fileSystem)
-        cucumberFixture.createStepFiles(workspace.fileSystem)
+        createFeatureFiles(workspace.fileSystem)
+        createStepFiles(workspace.fileSystem)
 
         when:
         def result = maven.execute(workspace, "test")
@@ -44,7 +43,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = cucumberFixture.expectedCompanionFiles("Test")
+        def expectedCompanions = expectedCompanionFiles("Test")
         expectedCompanions.forEach {
             verifyAll(testReport(it)) {
                 Files.exists(it)
