@@ -1,17 +1,34 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+
 plugins {
     groovy
-    `java-gradle-plugin`
-    `java-test-fixtures`
-    alias(libs.plugins.shadow)
-    kotlin("jvm") version libs.versions.kotlin
+    `kotlin-dsl`
+    id("com.gradle.plugin-publish") version "1.2.1"
+    id("conventions.publishing")
+}
+
+project.description = "Gradle Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
+val gradlePluginArtifactId = "cucumber-companion-gradle-plugin"
+
+base.archivesName.set(gradlePluginArtifactId)
+
+afterEvaluate {
+    val pluginMaven by publishing.publications.getting(MavenPublication::class) {
+        artifactId = gradlePluginArtifactId
+    }
 }
 
 val crossVersions = listOf(
     CrossVersionTest("7.3", false), // lowest supported versions as jvm-test-suites was added here
     CrossVersionTest(GradleVersion.current().version, true),
 )
+
+tasks.withType<ShadowJar>().configureEach {
+    archiveClassifier = ""
+}
 
 java {
     toolchain {
@@ -46,7 +63,7 @@ val functionalTestTask = tasks.named<Test>("functionalTest") {
     jvmArgumentProviders.add(CrossVersionTest(GradleVersion.current().version, false))
 }
 
-val allCrossVersionTests =  crossVersions.map {
+val allCrossVersionTests = crossVersions.map {
     tasks.register<Test>("functionalTest_${it.testName}") {
         val templateTask = functionalTestTask.get()
         classpath = templateTask.classpath

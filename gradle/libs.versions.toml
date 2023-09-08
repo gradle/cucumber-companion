@@ -13,11 +13,12 @@ groovy-xml.module = "org.codehaus.groovy:groovy-xml"
 spock-bom = { module = "org.spockframework:spock-bom", version.ref = "spock" }
 spock-core.module = "org.spockframework:spock-core"
 maven-core = { module = "org.apache.maven:maven-core", version.ref = "mavenMaxCompatible" }
-maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "mavenMaxCompatible"}
+maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "mavenMaxCompatible" }
 maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.9.0" }
 takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.1" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.0.1" }
+shadow = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
 
 [plugins]
 mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }
-shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
+nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.3.0" }

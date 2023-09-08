@@ -34,11 +34,11 @@ fun generateCucumberSuiteCompanion(
     val outputDir = buildDirectory.dir("generated-sources/cucumberCompanion-$name")
     companionTask.configure {
         // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
-        it.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
-        it.outputDirectory.set(outputDir)
+        this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
+        this.outputDirectory.set(outputDir)
     }
     sourceSet.java.srcDir(outputDir)
     taskContainer.named(sourceSet.compileJavaTaskName) {
-        it.dependsOn(companionTask.name)
+        this.dependsOn(companionTask.name)
     }
 }

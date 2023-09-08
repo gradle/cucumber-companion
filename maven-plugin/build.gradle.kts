@@ -10,26 +10,22 @@ plugins {
     groovy
     `maven-publish`
     `jvm-test-suite`
-    `java-test-fixtures`
     alias(libs.plugins.mavenPluginDevelopment)
-    alias(libs.plugins.shadow)
     id("conventions.maven-plugin-testing")
+    id("conventions.publishing")
 }
 
-val ourArtifactId = "cucumber-companion-plugin"
+project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
+val mavenPluginArtifactId = "cucumber-companion-maven-plugin"
 
 mavenPlugin {
-    artifactId.set(ourArtifactId)
+    artifactId.set(mavenPluginArtifactId)
+    dependencies = configurations.named("shadow")
 }
 
-publishing {
-    publications {
-        val maven by creating(MavenPublication::class) {
-            artifactId = ourArtifactId
-            //from(components["java"])
-        }
-        shadow.component(maven)
-    }
+val mavenJava by publishing.publications.creating(MavenPublication::class) {
+    artifactId = mavenPluginArtifactId
+    shadow.component(this)
 }
 
 java {
@@ -59,8 +55,9 @@ mavenPluginTesting {
     mavenVersions = setOf(
         libs.versions.mavenMinCompatible.get(),
         "3.8.7",
-        libs.versions.mavenMaxCompatible.get())
-    pluginPublication = publishing.publications.named<MavenPublication>("maven")
+        libs.versions.mavenMaxCompatible.get()
+    )
+    pluginPublication = mavenJava
 }
 
 // adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files

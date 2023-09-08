@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <name>OpenSourceProjects_CucmberCompanion Config DSL Script</name>
-  <groupId>OpenSourceProjects_CucmberCompanion</groupId>
-  <artifactId>OpenSourceProjects_CucmberCompanion_dsl</artifactId>
+  <name>OpenSourceProjects_CucumberCompanion Config DSL Script</name>
+  <groupId>OpenSourceProjects_CucumberCompanion</groupId>
+  <artifactId>OpenSourceProjects_CucumberCompanion_dsl</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <parent>
