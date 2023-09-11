@@ -16,5 +16,7 @@ jobs:
 
             - name: 'Run all Cross Version Tests'
               uses: gradle/gradle-build-action@v2
+              env:
+                  GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
               with:
                   arguments: "allMavenCrossVersionTests allGradleCrossVersionTests  --no-configuration-cache"
