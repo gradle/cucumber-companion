@@ -3,12 +3,10 @@
  */
 package org.gradle.cucumber.companion
 
-import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CompanionAssertions
+import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -35,7 +33,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         runner = new TestContextRunner(workspace.currentPath)
     }
 
-    def "companion task can be registered"() {
+    def "companion task can be registered"(BuildScriptLanguage buildScriptLanguage) {
         given:
         setupPlugin(buildScriptLanguage)
 
@@ -46,12 +44,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
         where:
-        buildScriptLanguage << ['groovy', 'kotlin']
+        buildScriptLanguage << BuildScriptLanguage.values()
     }
 
-    def "testGenerateCucumberSuiteCompanion generates valid companion files"() {
+    def "testGenerateCucumberSuiteCompanion generates valid companion files"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         given:
-        setupPlugin(buildScriptLanguage)
+        setupPlugin(buildScriptLanguage, variant)
         createFeatureFiles(workspace)
 
         when:
@@ -67,10 +65,10 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         }
 
         where:
-        buildScriptLanguage << ['groovy', 'kotlin']
+        [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
-    def "testGenerateCucumberSuiteCompanion is incremental"() {
+    def "testGenerateCucumberSuiteCompanion is incremental"(BuildScriptLanguage buildScriptLanguage) {
         given: "starting with a single feature"
         setupPlugin(buildScriptLanguage)
         createFeatureFiles(workspace, [CucumberFeature.ProductSearch])
@@ -120,27 +118,88 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         }
 
         where:
-        buildScriptLanguage << ['groovy', 'kotlin']
+        buildScriptLanguage << BuildScriptLanguage.values()
     }
 
     Path companionFile(ExpectedCompanionFile companion) {
         return workspace.resolve("build/generated-sources/cucumberCompanion-test/${companion.relativePath}")
     }
 
-    void setupPlugin(String language) {
+    void setupPlugin(BuildScriptLanguage language, Variant variant = Variant.Implicit_with_TestSuites) {
         switch (language) {
-            case 'groovy':
-                setupPluginGroovy()
+            case BuildScriptLanguage.Groovy:
+                switch (variant) {
+                    case Variant.Implicit:
+                        setupPluginGroovy(false)
+                        break
+                    case Variant.Implicit_with_TestSuites:
+                        setupPluginGroovy(true)
+                        break
+                    case Variant.Explicit:
+                        setupPluginExplicitGroovy()
+                        break
+                }
                 break
-            case 'kotlin':
-                setupPluginKotlin()
+            case BuildScriptLanguage.Kotlin:
+                switch (variant) {
+                    case Variant.Implicit:
+                        setupPluginKotlin(false)
+                        break
+                    case Variant.Implicit_with_TestSuites:
+                        setupPluginKotlin(true)
+                        break
+                    case Variant.Explicit:
+                        setupPluginExplicitKotlin()
+                        break
+                }
                 break
             default:
                 throw new IllegalArgumentException("Unsupported language: $language")
         }
     }
 
-    private void setupPluginGroovy() {
+    enum BuildScriptLanguage {
+        Groovy, Kotlin
+    }
+
+    enum Variant {
+        Implicit,
+        Implicit_with_TestSuites,
+        Explicit;
+
+        @Override
+        String toString() {
+            return name().replaceAll("_", " ")
+        }
+    }
+
+    private void setupPluginGroovy(boolean withJvmTestSuite = true) {
+        buildFile = workspace.file("build.gradle")
+        settingsFile = workspace.file("settings.gradle")
+        settingsFile.text = ""
+        buildFile.text = """\
+            plugins {
+                id('java')
+                ${withJvmTestSuite ? "id('jvm-test-suite')" : ""}
+                id('org.gradle.cucumber.companion')
+            }
+            """.stripIndent(true)
+    }
+
+    private void setupPluginKotlin(boolean withJvmTestSuite = true) {
+        buildFile = workspace.file("build.gradle.kts")
+        settingsFile = workspace.file("settings.gradle.kts")
+        settingsFile.text = ""
+        buildFile.text = """\
+            plugins {
+                java
+                ${withJvmTestSuite ? 'id("jvm-test-suite")' : ""}
+                id("org.gradle.cucumber.companion")
+            }
+            """.stripIndent(true)
+    }
+
+    private void setupPluginExplicitGroovy() {
         buildFile = workspace.file("build.gradle")
         settingsFile = workspace.file("settings.gradle")
         settingsFile.text = ""
@@ -151,18 +210,21 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 id('org.gradle.cucumber.companion')
             }
 
+            cucumberCompanion {
+                enableForStandardTestTask = false
+            }
+
             testing {
                 suites {
                     test {
-                        // unfortunately we can't make use of Groovy's extension functions, as Gradle doesn't support that.
-                        org.gradle.kotlin.dsl.CucumberCompanionKt.generateCucumberSuiteCompanion(delegate, project)
+                        cucumberCompanion.generateCucumberSuiteCompanion(delegate)
                     }
                 }
             }
             """.stripIndent(true)
     }
 
-    private void setupPluginKotlin() {
+    private void setupPluginExplicitKotlin() {
         buildFile = workspace.file("build.gradle.kts")
         settingsFile = workspace.file("settings.gradle.kts")
         settingsFile.text = ""
@@ -171,6 +233,10 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 java
                 `jvm-test-suite`
                 id("org.gradle.cucumber.companion")
+            }
+
+            cucumberCompanion {
+                enableForStandardTestTask.set(false)
             }
 
             testing {
