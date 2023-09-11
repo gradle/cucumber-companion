@@ -1,0 +1,101 @@
+https://github.com/gradle/cucumber-companion/blob/main/LICENSE[image:image:https://img.shields.io/github/license/gradle/cucumber-companion[License]]
+https://central.sonatype.com/artifact/org.gradle.cucumber.companion/cucumber-companion[image:https://img.shields.io/maven-central/v/org.gradle.cucumber.companion/cucumber-companion.svg?label=Maven%20Central[Maven Central]]
+https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml[image:https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml/badge.svg?branch=main[GitHub Workflow Status]]
+
+= Cucumber Companion
+:version: 1.0.0
+
+== Why would you add the Cucumber Companion plugin to you build?
+
+Gradle and Maven (Surefire/Failsafe) only support class-based tests (https://github.com/gradle/gradle/issues/4773[gradle/#4773],
+https://issues.apache.org/jira/browse/SUREFIRE-1724[SUREFIRE-1724]), this means that they can't discover cucumbers `*.feature` files as tests.
+
+The https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-junit-platform-engine/README.md#use-the-junit-platform-suite-engine[recommended workaround] is to create a single JUnit 5 suite class to run all the feature files.
+This works fine, if your goal is to just always run all tests.
+However, if you want to be able to run a single feature file, or use advanced test acceleration techniques, such as Predictive Test Selection (PTS), or Test Distribution (TD), then you need to have a single test class per feature file.
+
+This is where the cucumber-companion plugins come in, they automate the creation of the necessary JUnit 5 suite files to allow a fine-grained selection of tests.
+
+=== What's with the name?
+
+We think of the generated JUnit 5 suite files as companions to the respective cucumber feature files.
+Also, the plugins don't replace anything from cucumber, but act as a companion to it.
+
+== Installation and Usage
+
+This document assumes, that you have followed the basic instructions from https://cucumber.io/docs/installation/java/ and https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine to set up the necessary dependencies.
+
+=== Gradle
+
+Add the plugin declaration to the plugins block in your `build.gradle(.kts)` file.
+
+[source,kotlin,subs="attributes+"]
+----
+plugins {
+    id("org.gradle.cucumber.companion").version("{version}")
+}
+----
+
+If your cucumber feature files are in the standard `src/test/resources` folder this is all you have to do.
+
+==== Test Suites
+
+If your build uses the https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html[JVM Test Suite Plugin], and your features are _not_ in the default `test`-suite, then you can enable the companion file generation for other test suites as follows:
+
+.build.gradle.kts (Kotlin)
+[source,kotlin]
+----
+testing {
+    suites {
+        functionalTest {
+            generateCucumberSuiteCompanion(project)
+        }
+    }
+}
+----
+
+.build.gradle (Groovy)
+[source,groovy]
+----
+testing {
+    suites {
+        functionalTest {
+            cucumberCompanion.generateCucumberSuiteCompanion(delegate)
+        }
+    }
+}
+----
+
+==== Disabling generation for the default `test` task/suite
+
+If you need to disable the generation of companion files for the default `test` task/suite, then you can do so via the `cucumberCompanion` extension.
+
+[source,kotlin]
+----
+cucumberCompanion {
+    enableForStandardTestTask.set(false)
+}
+----
+
+=== Maven
+
+[source,xml,subs="attributes+"]
+----
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.gradle.cucumber.companion</groupId>
+            <artifactId>cucumber-companion-plugin</artifactId>
+            <version>{version}</version>
+            <executions>
+                <execution>
+                    <id>generate-companion</id>
+                    <goals>
+                        <goal>generate-cucumber-companion-files</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
