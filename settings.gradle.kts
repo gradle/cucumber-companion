@@ -13,7 +13,14 @@ dependencyResolutionManagement {
     }
 }
 
+val isCI = System.getenv("CI")?.toBoolean() ?: false
+val isCC = gradle.startParameter.isConfigurationCacheRequested
+
+require(!isCC || !isCI) { "Configuration-Cache should be disabled on CI" }
+
 rootProject.name = "cucumber-companion"
 include("gradle-plugin")
 include("maven-plugin")
 include("companion-generator")
+
+
