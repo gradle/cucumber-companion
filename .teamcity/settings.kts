@@ -24,39 +24,73 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 */
 
 version = "2023.05"
-
 project {
-    buildType {
-        name = "Publish Cucumber Companion"
-        id = RelativeId(name.toId())
-        description = "Publishes the Cucumber Companion Plugins"
+    subProject {
 
-        vcs {
-            root(AbsoluteId("OpenSourceProjects_CucmberCompanion_HttpsGithubComGradleCucumberCompanion"))
-            checkoutMode = CheckoutMode.ON_AGENT
-            cleanCheckout = true
-        }
+        buildType {
+            name = "Publish to Maven Central"
+            id = RelativeId(name.toId())
+            description = "Publishes the Cucumber Companion Plugins to Maven Central"
 
-        requirements {
-            contains("teamcity.agent.jvm.os.name", "Linux")
-        }
+            vcs {
+                root(DslContext.settingsRoot)
+                checkoutMode = CheckoutMode.ON_AGENT
+                cleanCheckout = true
+            }
 
-        steps {
-            gradle {
-                useGradleWrapper = true
-                tasks = "clean publishAllPublicationsToArtifactoryRepository"
-                gradleParams = "--build-cache --no-configuration-cache"
+            requirements {
+                contains("teamcity.agent.jvm.os.name", "Linux")
+            }
+
+            steps {
+                gradle {
+                    useGradleWrapper = true
+                    tasks = "clean publishAllPublicationsToSonatypeRepository"
+                    gradleParams = "--build-cache --no-configuration-cache"
+                }
+            }
+            params {
+                param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
+                password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
+                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
+                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
             }
         }
-        params {
-            param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
-            password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
-            param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
-            password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
-            password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
-            password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
+    }
+
+
+    subProject {
+        buildType {
+            name = "Publish to Artifactory"
+            id = RelativeId(name.toId())
+            description = "Publishes the Cucumber Companion Plugins to Artifactory"
+
+            vcs {
+                root(DslContext.settingsRoot)
+                checkoutMode = CheckoutMode.ON_AGENT
+                cleanCheckout = true
+            }
+
+            requirements {
+                contains("teamcity.agent.jvm.os.name", "Linux")
+            }
+
+            steps {
+                gradle {
+                    useGradleWrapper = true
+                    tasks = "clean publishAllPublicationsToArtifactoryRepository"
+                    gradleParams = "--build-cache --no-configuration-cache"
+                }
+            }
+            params {
+                param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
+                password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
+                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
+                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
+            }
         }
     }
+
     params {
         param("env.GRADLE_ENTERPRISE_ACCESS_KEY", "%ge.gradle.org.access.key%")
         param("env.GRADLE_CACHE_REMOTE_URL", "%gradle.cache.remote.url%")
