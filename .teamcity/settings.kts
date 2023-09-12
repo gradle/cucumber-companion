@@ -25,4 +25,41 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 version = "2023.05"
 
 project {
+    buildType {
+        name = "Publish Cucumber Companion"
+        id = RelativeId(name.toId())
+        description = "Publishes the Cucumber Companion Plugins"
+
+        vcs {
+            root(AbsoluteId("OpenSourceProjects_CucmberCompanion_HttpsGithubComGradleCucumberCompanion"))
+            checkoutMode = CheckoutMode.ON_AGENT
+            cleanCheckout = true
+        }
+
+        requirements {
+            contains("teamcity.agent.jvm.os.name", "Linux")
+        }
+
+        steps {
+            gradle {
+                useGradleWrapper = true
+                tasks = "clean publishAllPublicationsToArtifactoryRepository"
+                gradleParams = "--build-cache --no-configuration-cache"
+            }
+        }
+        params {
+            param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
+            password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
+            param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
+            password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
+            password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
+            password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
+        }
+    }
+    params {
+        param("env.GRADLE_ENTERPRISE_ACCESS_KEY", "%ge.gradle.org.access.key%")
+        param("env.GRADLE_CACHE_REMOTE_URL", "%gradle.cache.remote.url%")
+        param("env.GRADLE_CACHE_REMOTE_USERNAME", "%gradle.cache.remote.username%")
+        password("env.GRADLE_CACHE_REMOTE_PASSWORD", "%gradle.cache.remote.password%")
+    }
 }
