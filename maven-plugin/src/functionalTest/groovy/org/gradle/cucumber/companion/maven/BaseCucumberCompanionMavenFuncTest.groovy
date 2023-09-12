@@ -14,6 +14,7 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
     static final String JUNIT_VERSION = "5.10.0"
     static final String CUCUMBER_VERSION = "7.12.1"
     static final String SUREFIRE_VERSION = "3.1.2"
+    static final String FAILSAFE_VERSION = SUREFIRE_VERSION
 
     MavenDistribution maven = MavenDistribution.theSingleMavenDistribution()
     @Delegate
@@ -24,8 +25,12 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
         return workspace.fileSystem.resolve("target/generated-test-sources/cucumberCompanion/${companion.relativePath}")
     }
 
-    Path testReport(ExpectedCompanionFile companion) {
+    Path sureFireTestReport(ExpectedCompanionFile companion) {
         workspace.fileSystem.resolve("target/surefire-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
+    }
+
+    Path failsafeFireTestReport(ExpectedCompanionFile companion) {
+        workspace.fileSystem.resolve("target/failsafe-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
     }
 
     def createProject(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
@@ -36,6 +41,7 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             addPlugin("org.apache.maven.plugins", "maven-compiler-plugin", "3.11.0")
             addPlugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
             addPlugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
+            addPlugin("org.apache.maven.plugins", "maven-failsafe-plugin", FAILSAFE_VERSION)
             addPlugin("org.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
                 executions {
                     execution {

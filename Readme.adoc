@@ -105,3 +105,29 @@ The goal is bound to the `generate-test-sources` lifecycle phase.
     </plugins>
 </build>
 ----
+
+By default, the plugin generates `*Test.java` files for surefire, if you prefer to run your tests with failsafe instead, then you can configure the plugin to use `IT` as suffix instead.
+
+[source,xml,subs="attributes+"]
+----
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.gradle.cucumber.companion</groupId>
+            <artifactId>cucumber-companion-maven-plugin</artifactId>
+            <version>{version}</version>
+            <executions>
+                <execution>
+                    <id>generate-companion</id>
+                    <goals>
+                        <goal>generate-cucumber-companion-files</goal>
+                    </goals>
+                    <configuration>
+                        <companionSuffix>IT</companionSuffix>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
