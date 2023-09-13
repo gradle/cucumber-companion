@@ -23,15 +23,19 @@ mavenPlugin {
     dependencies = configurations.named("shadow")
 }
 
-val mavenJava by publishing.publications.creating(MavenPublication::class) {
-    artifactId = mavenPluginArtifactId
-    shadow.component(this)
-}
-
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+val mavenJava by publishing.publications.creating(MavenPublication::class) {
+    artifactId = mavenPluginArtifactId
+    artifact(tasks.named("javadocJar"))
+    artifact(tasks.named("sourcesJar"))
+    shadow.component(this)
 }
 
 dependencies {
