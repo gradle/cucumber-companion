@@ -55,7 +55,6 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             addPlugin("org.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
                 executions {
                     execution {
-                        id("generate-companion")
                         goals {
                             goal("generate-cucumber-companion-files")
                         }

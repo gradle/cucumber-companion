@@ -19,11 +19,11 @@ This is where the Cucumber Companion plugins come in, they automate the creation
 === What's with the name?
 
 We think of the generated JUnit 5 suite files as companions to the respective Cucumber feature files.
-Also, the plugins don't replace anything from Cucumber, but act as a companion to it.
+Also, the plugins don't replace anything from Cucumber, but act as companions to it.
 
 == Installation and Usage
 
-This document assumes that you have followed the basic instructions from https://cucumber.io/docs/installation/java/ and https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine to set up the necessary dependencies.
+IMPORTANT: This document assumes that you have followed the basic instructions from https://cucumber.io/docs/installation/java/ and https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine to set up the necessary dependencies.
 
 === Gradle
 
@@ -95,7 +95,6 @@ The goal is bound to the `generate-test-sources` lifecycle phase.
             <version>{version}</version>
             <executions>
                 <execution>
-                    <id>generate-companion</id>
                     <goals>
                         <goal>generate-cucumber-companion-files</goal>
                     </goals>
@@ -118,7 +117,6 @@ By default, the plugin generates `*Test.java` files for surefire, if you prefer 
             <version>{version}</version>
             <executions>
                 <execution>
-                    <id>generate-companion</id>
                     <goals>
                         <goal>generate-cucumber-companion-files</goal>
                     </goals>
