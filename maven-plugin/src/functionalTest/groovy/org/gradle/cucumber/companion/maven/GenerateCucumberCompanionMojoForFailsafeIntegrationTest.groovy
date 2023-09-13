@@ -37,7 +37,7 @@ class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumb
         createStepFiles(workspace.fileSystem)
 
         when:
-        def result = maven.execute(workspace, "verify", "failsafe:integration-test") // not idea why integration-test isn't called by verify
+        def result = maven.execute(workspace, "verify")
 
         then:
         noExceptionThrown()

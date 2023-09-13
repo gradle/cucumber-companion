@@ -41,7 +41,17 @@ class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             addPlugin("org.apache.maven.plugins", "maven-compiler-plugin", "3.11.0")
             addPlugin("org.apache.maven.plugins", "maven-resources-plugin", "3.3.1")
             addPlugin("org.apache.maven.plugins", "maven-surefire-plugin", SUREFIRE_VERSION)
-            addPlugin("org.apache.maven.plugins", "maven-failsafe-plugin", FAILSAFE_VERSION)
+            addPlugin("org.apache.maven.plugins", "maven-failsafe-plugin", FAILSAFE_VERSION) {
+                executions {
+                    execution {
+                        goals {
+                            goal("integration-test")
+                            goal("verify")
+                        }
+                    }
+                }
+
+            }
             addPlugin("org.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
                 executions {
                     execution {
