@@ -11,11 +11,8 @@ import java.util.stream.StreamSupport;
 public class CompanionFile {
     private static final Pattern VALID_PACKAGE_ELEMENTS = Pattern.compile("[^a-zA-Z0-9_$]");
     private static final Pattern VALID_CLASS_NAME = Pattern.compile("[^a-zA-Z0-9_]");
-    private final Path sourceDir;
-    private final Path targetDir;
     private final Path actual;
     private final Path relativeSrc;
-    private final Path relativeDest;
     private final Path destination;
     private final String featureName;
     private final Optional<String> packageName;
@@ -27,12 +24,10 @@ public class CompanionFile {
         if (!actual.getFileName().toString().endsWith(".feature")) {
             throw new IllegalArgumentException("The passed parameter was not a feature file:" + actual);
         }
-        this.sourceDir = sourceDir;
-        this.targetDir = destinationDir;
         this.actual = actual;
         this.relativeSrc = sourceDir.relativize(actual);
         this.featureName = toValidClassName(getNameWithoutExtension(actual)) + suffix;
-        this.relativeDest = relativeSrc.resolveSibling(featureName + ".java");
+        Path relativeDest = relativeSrc.resolveSibling(featureName + ".java");
         this.destination = destinationDir.resolve(relativeDest);
         this.packageName = relativeSrc.getParent() == null ? Optional.empty() : Optional.of(toPackageList(relativeSrc.getParent()));
     }

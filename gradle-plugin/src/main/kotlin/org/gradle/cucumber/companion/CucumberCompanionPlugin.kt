@@ -22,7 +22,7 @@ class CucumberCompanionPlugin : Plugin<Project> {
                 val name = "test"
                 val testSuite =
                     project.extensions.findByType(TestingExtension::class.java)?.suites?.withType(JvmTestSuite::class.java)
-                        ?.findByName("test")
+                        ?.findByName(name)
                 if (testSuite != null) {
                     generateCucumberSuiteCompanion(testSuite, project)
                 } else {

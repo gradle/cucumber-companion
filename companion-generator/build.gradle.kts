@@ -14,10 +14,10 @@ java {
 }
 
 dependencies {
-    testFixturesApi(platform(libs.groovy.bom.get().toString()))
+    testFixturesApi(platform(libs.groovy.bom))
     testFixturesApi(libs.groovy.core)
     testFixturesApi(libs.groovy.nio)
-    testFixturesApi(platform(libs.spock.bom.get().toString()))
+    testFixturesApi(platform(libs.spock.bom))
     testFixturesApi(libs.spock.core)
     testFixturesImplementation(libs.jetbrains.annotations)
 }

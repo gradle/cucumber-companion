@@ -8,9 +8,6 @@ import org.gradle.work.ChangeType
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.nio.file.Files
-import kotlin.io.path.exists
-import kotlin.io.path.name
-import kotlin.io.path.writeText
 
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
@@ -30,7 +27,9 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
                 val companionFile = CompanionGenerator.resolve(inputDir, outputDir, change.file.toPath())
                 when(change.changeType) {
                     ChangeType.ADDED -> CompanionGenerator.create(companionFile)
-                    ChangeType.MODIFIED -> CompanionGenerator.update(companionFile)
+                    // This means that the source file was modified in some way,
+                    // but since we currently only care about the file name, we can ignore it for now.
+                    ChangeType.MODIFIED -> {}
                     ChangeType.REMOVED -> Files.deleteIfExists(companionFile.destination)
                     else -> {}
                 }
