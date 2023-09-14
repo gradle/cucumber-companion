@@ -65,9 +65,22 @@ final class Pom extends XmlTree {
                     ${version ? "<version>$version</version>" : ""}
                     $config
                 </plugin>
-            """.stripMargin())
+            """.stripIndent(true))
         }
         return this
+    }
+
+    Pom removePlugin(String groupId, String artifactId) {
+        Node plugin = findPlugin(groupId, artifactId)
+        if (plugin) {
+            plugin.parent().remove(plugin)
+        }
+        return this
+    }
+
+    Pom replacePlugin(String groupId, String artifactId, String version = null, @DelegatesTo(MarkupBuilder) Closure closure = {}) {
+        removePlugin(groupId, artifactId)
+        addPlugin(groupId, artifactId, version, runOnMarkupBuilder(closure))
     }
 
     private Node findManagedDependency(String groupId, String artifactId) {
@@ -111,7 +124,7 @@ final class Pom extends XmlTree {
                 <scope>$scope</scope>
                 ${type ? "<type>$type</type>" : ""}
                 $config
-            </dependency>""".stripMargin())
+            </dependency>""".stripIndent(true))
         }
 
         return this
@@ -140,7 +153,7 @@ final class Pom extends XmlTree {
                 <scope>$scope</scope>
                 ${type ? "<type>$type</type>" : ""}
                 $config
-            </dependency>""".stripMargin())
+            </dependency>""".stripIndent(true))
         }
 
         return this

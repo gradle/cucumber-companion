@@ -1,6 +1,5 @@
 package org.gradle.cucumber.companion.maven;
 
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -9,6 +8,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.gradle.cucumber.companion.generator.CompanionFile;
 import org.gradle.cucumber.companion.generator.CompanionGenerator;
 
@@ -29,7 +29,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
 
 
     @Parameter(defaultValue = "Test", required = true)
-    private String companionSuffix;
+    private String generatedFileNameSuffix;
 
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
@@ -80,7 +80,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     private int createCompanionFiles(Path _testResourcesDirectory) throws MojoExecutionException {
         try (java.util.stream.Stream<Path> stream = Files.walk(_testResourcesDirectory)) {
             return stream.filter(p -> p.getFileName().toString().endsWith(".feature"))
-                .map(p -> new CompanionFile(_testResourcesDirectory, _generatedSourcesDirectory, p, companionSuffix))
+                .map(p -> new CompanionFile(_testResourcesDirectory, _generatedSourcesDirectory, p, generatedFileNameSuffix))
                 .mapToInt(companionFile -> {
                     try {
                         logDebug(() -> "Creating " + companionFile);
