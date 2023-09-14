@@ -5,6 +5,8 @@ on:
         branches:
             - main
     pull_request:
+      paths:
+          - './.teamcity/**'
 
 jobs:
     verfy-team-city-configs:
