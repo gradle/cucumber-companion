@@ -1,4 +1,4 @@
-name: 'Verify'
+name: 'Verify Team City Config'
 
 on:
     push:
