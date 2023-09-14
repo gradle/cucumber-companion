@@ -41,7 +41,7 @@ publishing {
     repositories {
         maven {
             name = "releaseCandidate"
-            url = uri("https://repo.gradle.org/artifactory/enterprise-libs-release-candidates/")
+            url = uri("https://repo.grdev.net/artifactory/enterprise-libs-release-candidates-local/")
             credentials {
                 username = providers.gradleProperty("artifactoryUsername").orNull
                 password = providers.gradleProperty("artifactoryPassword").orNull
