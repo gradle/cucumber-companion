@@ -27,7 +27,7 @@ version = "2023.05"
 project {
     description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
 
-    subProject(publish(
+    buildType(publish(
         "Publish to Artifactory",
         "Publishes the Cucumber Companion Plugins to Artifactory",
         "publishAllPublicationsToArtifactoryRepository"
@@ -36,7 +36,7 @@ project {
         it.password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
     })
 
-    subProject(publish(
+    buildType(publish(
         "Publish to Maven Central",
         "Publishes the Cucumber Companion Plugins to Maven Central",
         "publishAllPublicationsToSonatypeRepository"
@@ -58,38 +58,33 @@ fun publish(
     description: String,
     gradlePublishTaskName: String,
     extraParams: (p: ParametrizedWithType) -> Unit
-): Project {
-    return Project {
+): BuildType {
+    return BuildType {
         this.name = name
         this.id = RelativeId(name.toId())
         this.description = description
 
-        buildType {
-            this.name = name
-            this.id = RelativeId(this.name.toId())
+        vcs {
+            root(DslContext.settingsRoot)
+            checkoutMode = CheckoutMode.ON_AGENT
+            cleanCheckout = true
+        }
 
-            vcs {
-                root(DslContext.settingsRoot)
-                checkoutMode = CheckoutMode.ON_AGENT
-                cleanCheckout = true
-            }
+        requirements {
+            contains("teamcity.agent.jvm.os.name", "Linux")
+        }
 
-            requirements {
-                contains("teamcity.agent.jvm.os.name", "Linux")
+        steps {
+            gradle {
+                useGradleWrapper = true
+                tasks = "clean $gradlePublishTaskName"
+                gradleParams = "--build-cache --no-configuration-cache"
             }
-
-            steps {
-                gradle {
-                    useGradleWrapper = true
-                    tasks = "clean $gradlePublishTaskName"
-                    gradleParams = "--build-cache --no-configuration-cache"
-                }
-            }
-            params {
-                extraParams(this)
-                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
-                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
-            }
+        }
+        params {
+            extraParams(this)
+            password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
+            password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
         }
     }
 }
