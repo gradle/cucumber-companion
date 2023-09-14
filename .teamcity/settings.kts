@@ -25,6 +25,10 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2023.05"
 project {
+    name = "Publish Plugins"
+    id = RelativeId(name.toId())
+    description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
+
     subProject {
 
         buildType {
