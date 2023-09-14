@@ -6,7 +6,7 @@ on:
             - main
     pull_request:
       paths:
-          - './.teamcity/**'
+          - '.teamcity/**'
 
 jobs:
     verfy-team-city-configs:
