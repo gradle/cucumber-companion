@@ -121,7 +121,7 @@ By default, the plugin generates `*Test.java` files for surefire, if you prefer 
                         <goal>generate-cucumber-companion-files</goal>
                     </goals>
                     <configuration>
-                        <companionSuffix>IT</companionSuffix>
+                        <generatedFileNameSuffix>IT</generatedFileNameSuffix>
                     </configuration>
                 </execution>
             </executions>

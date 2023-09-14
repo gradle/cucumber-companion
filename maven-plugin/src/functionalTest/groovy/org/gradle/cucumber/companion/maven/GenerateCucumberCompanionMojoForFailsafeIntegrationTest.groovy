@@ -63,7 +63,7 @@ class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumb
                         goal("generate-cucumber-companion-files")
                     }
                     configuration {
-                        companionSuffix("IT")
+                        generatedFileNameSuffix("IT")
                     }
                 }
             }
