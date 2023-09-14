@@ -29,76 +29,65 @@ project {
     id = RelativeId(name.toId())
     description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
 
-    subProject {
+    subProject(publish(
+        "Publish to Artifactory",
+        "Publishes the Cucumber Companion Plugins to Artifactory",
+        "publishAllPublicationsToArtifactoryRepository"
+    ) {
+        it.param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
+        it.password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
+    })
 
-        buildType {
-            name = "Publish to Maven Central"
-            id = RelativeId(name.toId())
-            description = "Publishes the Cucumber Companion Plugins to Maven Central"
-
-            vcs {
-                root(DslContext.settingsRoot)
-                checkoutMode = CheckoutMode.ON_AGENT
-                cleanCheckout = true
-            }
-
-            requirements {
-                contains("teamcity.agent.jvm.os.name", "Linux")
-            }
-
-            steps {
-                gradle {
-                    useGradleWrapper = true
-                    tasks = "clean publishAllPublicationsToSonatypeRepository"
-                    gradleParams = "--build-cache --no-configuration-cache"
-                }
-            }
-            params {
-                param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
-                password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
-                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
-                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
-            }
-        }
-    }
-
-
-    subProject {
-        buildType {
-            name = "Publish to Artifactory"
-            id = RelativeId(name.toId())
-            description = "Publishes the Cucumber Companion Plugins to Artifactory"
-
-            vcs {
-                root(DslContext.settingsRoot)
-                checkoutMode = CheckoutMode.ON_AGENT
-                cleanCheckout = true
-            }
-
-            requirements {
-                contains("teamcity.agent.jvm.os.name", "Linux")
-            }
-
-            steps {
-                gradle {
-                    useGradleWrapper = true
-                    tasks = "clean publishAllPublicationsToArtifactoryRepository"
-                    gradleParams = "--build-cache --no-configuration-cache"
-                }
-            }
-            params {
-                param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
-                password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
-                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
-                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
-            }
-        }
-    }
+    subProject(publish(
+        "Publish to Maven Central",
+        "Publishes the Cucumber Companion Plugins to Maven Central",
+        "publishAllPublicationsToSonatypeRepository"
+    ) {
+        it.param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
+        it.password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
+    })
 
     params {
         param("env.GRADLE_ENTERPRISE_ACCESS_KEY", "%ge.gradle.org.access.key%")
         param("env.GRADLE_CACHE_REMOTE_URL", "%gradle.cache.remote.url%")
         param("env.GRADLE_CACHE_REMOTE_USERNAME", "%gradle.cache.remote.username%")
         password("env.GRADLE_CACHE_REMOTE_PASSWORD", "%gradle.cache.remote.password%")
+    }
+}
+
+fun publish(
+    name: String,
+    description: String,
+    gradlePublishTaskName: String,
+    extraParams: (p: ParametrizedWithType) -> Unit
+): Project {
+    return Project {
+        this.name = name
+        this.id = RelativeId(name.toId())
+        this.description = description
+        buildType {
+            vcs {
+                root(DslContext.settingsRoot)
+                checkoutMode = CheckoutMode.ON_AGENT
+                cleanCheckout = true
+            }
+
+            requirements {
+                contains("teamcity.agent.jvm.os.name", "Linux")
+            }
+
+            steps {
+                gradle {
+                    useGradleWrapper = true
+                    tasks = "clean $gradlePublishTaskName"
+                    gradleParams = "--build-cache --no-configuration-cache"
+                }
+            }
+            params {
+                extraParams(this)
+                password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
+                password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
+            }
+        }
     }
 }
