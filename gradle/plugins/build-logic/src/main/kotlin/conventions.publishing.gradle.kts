@@ -12,7 +12,7 @@ publishing {
             pom {
                 name.set(provider {
                     artifactId.split("-").joinToString(" ") { it.replaceFirstChar(Character::toUpperCase) }
-                } )
+                })
                 description.set(provider { project.description })
 
                 url.set("https://github.com/gradle/cucumber-companion/")
@@ -34,6 +34,17 @@ publishing {
                     developerConnection.set("scm:git:ssh://git@github.com:gradle/cucumber-companion.git")
                     url.set("https://github.com/gradle/cucumber-companion/")
                 }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "releaseCandidate"
+            url = uri("https://repo.gradle.org/artifactory/enterprise-libs-release-candidates/")
+            credentials {
+                username = providers.gradleProperty("artifactoryUsername").orNull
+                password = providers.gradleProperty("artifactoryPassword").orNull
             }
         }
     }

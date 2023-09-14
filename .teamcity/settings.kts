@@ -30,7 +30,7 @@ project {
     buildType(publish(
         "Publish to Artifactory",
         "Publishes the Cucumber Companion Plugins to Artifactory",
-        "publishAllPublicationsToArtifactoryRepository"
+        "publishToArtifactory"
     ) {
         it.param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
         it.password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
@@ -39,7 +39,7 @@ project {
     buildType(publish(
         "Publish to Maven Central",
         "Publishes the Cucumber Companion Plugins to Maven Central",
-        "publishAllPublicationsToSonatypeRepository"
+        "publishToSonatype"
     ) {
         it.param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
         it.password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
