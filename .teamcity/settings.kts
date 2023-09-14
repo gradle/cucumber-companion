@@ -30,7 +30,7 @@ project {
     buildType(publish(
         "Publish to Artifactory",
         "Publishes the Cucumber Companion Plugins to Artifactory",
-        "publishToArtifactory"
+        "publishAllPublicationsToReleaseCandidateRepository"
     ) {
         it.param("env.ORG_GRADLE_PROJECT_artifactoryUsername", "%artifactoryUsername%")
         it.password("env.ORG_GRADLE_PROJECT_artifactoryPassword", "%artifactoryPassword%")
