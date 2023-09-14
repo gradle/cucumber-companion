@@ -22,7 +22,6 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 (Plugins -> teamcity-configs -> teamcity-configs:generate), the
 'Debug' option is available in the context menu for the task.
 */
-
 version = "2023.05"
 project {
     description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
