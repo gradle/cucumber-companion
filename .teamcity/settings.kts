@@ -25,8 +25,6 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2023.05"
 project {
-    name = "Publish Plugins"
-    id = RelativeId(name.toId())
     description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
 
     subProject(publish(
@@ -65,7 +63,11 @@ fun publish(
         this.name = name
         this.id = RelativeId(name.toId())
         this.description = description
+
         buildType {
+            this.name = name
+            this.id = RelativeId(this.name.toId())
+
             vcs {
                 root(DslContext.settingsRoot)
                 checkoutMode = CheckoutMode.ON_AGENT
