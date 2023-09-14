@@ -68,6 +68,7 @@ testing {
 ----
 
 The added companion task has the pattern of `<suiteName>GenerateCucumberSuiteCompanion`, so for a suite named `functionalTest` it would be `functionalTestGenerateCucumberSuiteCompanion`.
+However, there's usually no need to call it manually since the `compile<suiteName>Java` task depends on it.
 
 ==== Disabling generation for the default `test` task/suite
 
@@ -105,7 +106,8 @@ The goal is bound to the `generate-test-sources` lifecycle phase.
 </build>
 ----
 
-By default, the plugin generates `*Test.java` files for surefire, if you prefer to run your tests with failsafe instead, then you can configure the plugin to use `IT` as suffix instead.
+By default, the plugin generates `*Test.java` files for surefire.
+If you prefer to run your tests with failsafe instead, then you can configure the plugin to use `IT` as suffix instead.
 
 [source,xml,subs="attributes+"]
 ----
