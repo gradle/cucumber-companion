@@ -16,6 +16,9 @@ import java.nio.file.Path
 
 class CucumberCompanionPluginFunctionalTest extends Specification {
 
+    static final String CUCUMBER_VERSION = "7.14.0"
+    static final String JUNIT_JUPITER_VERSION = "5.10.0"
+
     @TempDir
     FileSystemFixture workspace
     def buildFile
@@ -68,6 +71,26 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
+    def "generated companion files are picked up by Gradle's test task"() {
+        given:
+        setupPlugin(buildScriptLanguage, variant)
+        createFeatureFiles(workspace)
+        createStepFiles(workspace)
+
+        when:
+        def result = run("test")
+
+        then:
+        CucumberFeature.all()
+            .collect { it.toExpectedTestTaskOutput("PASSED") }
+            .every {
+                result.output.contains(it)
+            }
+
+        where:
+        [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
+    }
+
     def "testGenerateCucumberSuiteCompanion is incremental"(BuildScriptLanguage buildScriptLanguage) {
         given: "starting with a single feature"
         setupPlugin(buildScriptLanguage)
@@ -82,7 +105,6 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         expectedCompanionFiles('', [CucumberFeature.ProductSearch]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
-
 
         when: "adding another feature"
         createFeatureFiles(workspace, [CucumberFeature.PasswordReset])
@@ -106,12 +128,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "one companion remains"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [ CucumberFeature.PasswordReset]).forEach {
+        expectedCompanionFiles('', [CucumberFeature.PasswordReset]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
         and: "the other is gone"
-        expectedCompanionFiles('', [ CucumberFeature.ProductSearch]).forEach {
+        expectedCompanionFiles('', [CucumberFeature.ProductSearch]).forEach {
             with(companionFile(it)) {
                 !Files.exists(it)
             }
@@ -183,6 +205,18 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 ${withJvmTestSuite ? "id('jvm-test-suite')" : ""}
                 id('org.gradle.cucumber.companion')
             }
+            repositories {
+                mavenCentral()
+            }
+            dependencies {
+            ${dependenciesRequiredForExecution()}
+            }
+            tasks.withType(Test) {
+                useJUnitPlatform()
+                testLogging {
+                    events("standardOut", "passed", "failed")
+                }
+            }
             """.stripIndent(true)
     }
 
@@ -195,6 +229,18 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 java
                 ${withJvmTestSuite ? 'id("jvm-test-suite")' : ""}
                 id("org.gradle.cucumber.companion")
+            }
+            repositories {
+                mavenCentral()
+            }
+            dependencies {
+            ${dependenciesRequiredForExecution()}
+            }
+            tasks.withType<Test>().configureEach {
+                useJUnitPlatform()
+                testLogging {
+                    events("standardOut", "passed", "failed")
+                }
             }
             """.stripIndent(true)
     }
@@ -209,6 +255,9 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 id('jvm-test-suite')
                 id('org.gradle.cucumber.companion')
             }
+            repositories {
+                mavenCentral()
+            }
 
             cucumberCompanion {
                 enableForStandardTestTask = false
@@ -218,6 +267,19 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 suites {
                     test {
                         cucumberCompanion.generateCucumberSuiteCompanion(delegate)
+                        dependencies {
+                        ${dependenciesRequiredForExecution("implementation")}
+                        }
+                        targets {
+                            all {
+                                testTask.configure {
+                                    useJUnitPlatform()
+                                    testLogging {
+                                        events("standardOut", "passed", "failed")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -235,17 +297,44 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 id("org.gradle.cucumber.companion")
             }
 
+            repositories {
+                mavenCentral()
+            }
+
             cucumberCompanion {
                 enableForStandardTestTask.set(false)
             }
 
             testing {
                 suites {
-                    val test by getting(JvmTestSuite::class)   {
+                    val test by getting(JvmTestSuite::class) {
                         generateCucumberSuiteCompanion(project)
+                        dependencies {
+                        ${dependenciesRequiredForExecution("implementation")}
+                        }
+                        targets {
+                            all {
+                                testTask.configure {
+                                    useJUnitPlatform()
+                                    testLogging {
+                                        events("standardOut", "passed", "failed")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
             """.stripIndent(true)
+    }
+
+    def dependenciesRequiredForExecution(String configurationName = "testImplementation") {
+        return """\
+        $configurationName(platform("org.junit:junit-bom:$JUNIT_JUPITER_VERSION"))
+        $configurationName("io.cucumber:cucumber-java:$CUCUMBER_VERSION")
+        $configurationName("io.cucumber:cucumber-junit-platform-engine:$CUCUMBER_VERSION")
+        $configurationName("org.junit.jupiter:junit-jupiter")
+        $configurationName("org.junit.platform:junit-platform-suite")
+        """.stripIndent(true)
     }
 }

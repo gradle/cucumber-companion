@@ -8,6 +8,7 @@ enum CucumberFeature {
     ProductSearch(
         "Product Search",
         '',
+        'Users can search for products',
         '''\
             Feature: Product Search
               Scenario: Users can search for products
@@ -44,6 +45,7 @@ enum CucumberFeature {
     ),
     ShoppingCart('Shopping Cart',
         '',
+        'Users can add and remove items from the shopping cart',
         '''\
             Feature: Shopping Cart
               Scenario: Users can add and remove items from the shopping cart
@@ -80,6 +82,7 @@ enum CucumberFeature {
 
     UserRegistration('User Registration',
         'user',
+        'New users can create an account',
         '''\
             Feature: User Registration
               Scenario: New users can create an account
@@ -118,6 +121,7 @@ enum CucumberFeature {
 
     PasswordReset('Password Reset',
         'user',
+        'Users can reset their password',
         '''\
             Feature: Password Reset
               Scenario: Users can reset their password
@@ -160,6 +164,7 @@ enum CucumberFeature {
 
     UserProfile('User Profile',
         'user',
+        'Users can update their profile information',
         '''\
             Feature: User Profile
               Scenario: Users can update their profile information
@@ -210,6 +215,7 @@ enum CucumberFeature {
 
     final String featureName
     final String packageName
+    final String scenarioName
     final String featureFileContent
     final String stepFileContent
 
@@ -221,11 +227,13 @@ enum CucumberFeature {
     CucumberFeature(
         String featureName,
         String packageName,
+        String scenarioName,
         @Language("gherkin") String featureFileContent,
         @Language("JAVA") String stepFileContent
     ) {
         this.featureName = featureName
         this.packageName = packageName
+        this.scenarioName = scenarioName
         this.featureFileContent = featureFileContent
         this.stepFileContent = stepFileContent
 
@@ -233,6 +241,13 @@ enum CucumberFeature {
         this.relativePath = packageName.replaceAll(/\./, '/')
         this.featureFilePath = joinToPath(relativePath, featureName + ".feature")
         this.stepFilePath = joinToPath(relativePath, featureName.replaceAll("[^a-zA-Z0-9_]", "") + "Steps.java")
+    }
+
+    String toExpectedTestTaskOutput(String outcome = "PASSED") {
+        // Gives a string like this:
+        // "User_Profile > Cucumber > User Profile > user.User_Profile.Users can update their profile information PASSED"
+        def packagePrefix = packageName.empty ? "" : packageName + "."
+        return "$className > Cucumber > $featureName > $packagePrefix$className.$scenarioName $outcome"
     }
 
     private static String joinToPath(String path, String fileName) {
