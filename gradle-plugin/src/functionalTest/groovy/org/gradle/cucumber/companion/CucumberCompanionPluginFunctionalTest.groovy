@@ -33,9 +33,30 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         runner = new TestContextRunner(workspace.currentPath)
     }
 
+    def "should not fail if resources folder does not exist"() {
+        given:
+        setupPlugin(buildScriptLanguage)
+
+        when:
+        run("test")
+
+        then:
+        noExceptionThrown()
+
+        when:
+        def result = run("tasks", "--all")
+
+        then: "task should not even be registered"
+        !result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        where:
+        buildScriptLanguage << BuildScriptLanguage.values()
+    }
+
     def "companion task can be registered"(BuildScriptLanguage buildScriptLanguage) {
         given:
         setupPlugin(buildScriptLanguage)
+        createFeatureFiles(workspace)
 
         when:
         def result = run("tasks", "--all")

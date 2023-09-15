@@ -6,6 +6,17 @@ import java.nio.file.Files
 
 class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumberCompanionMavenFuncTest {
 
+    def "should not fail if resources folder does not exist"() {
+        given:
+        createProject()
+
+        when:
+        maven.execute(workspace, "test")
+
+        then:
+        noExceptionThrown()
+    }
+
     def "generate-cucumber-companion-files mojo generates valid companion file"() {
         given:
         createProject()
