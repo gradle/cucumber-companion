@@ -262,14 +262,13 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             cucumberCompanion {
                 enableForStandardTestTask = false
             }
-
+            dependencies {
+            ${dependenciesRequiredForExecution()}
+            }
             testing {
                 suites {
                     test {
                         cucumberCompanion.generateCucumberSuiteCompanion(delegate)
-                        dependencies {
-                        ${dependenciesRequiredForExecution("implementation")}
-                        }
                         targets {
                             all {
                                 testTask.configure {
@@ -304,14 +303,13 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             cucumberCompanion {
                 enableForStandardTestTask.set(false)
             }
-
+            dependencies {
+            ${dependenciesRequiredForExecution()}
+            }
             testing {
                 suites {
                     val test by getting(JvmTestSuite::class) {
                         generateCucumberSuiteCompanion(project)
-                        dependencies {
-                        ${dependenciesRequiredForExecution("implementation")}
-                        }
                         targets {
                             all {
                                 testTask.configure {
@@ -328,13 +326,13 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    def dependenciesRequiredForExecution(String configurationName = "testImplementation") {
+    def dependenciesRequiredForExecution() {
         return """\
-        $configurationName(platform("org.junit:junit-bom:$JUNIT_JUPITER_VERSION"))
-        $configurationName("io.cucumber:cucumber-java:$CUCUMBER_VERSION")
-        $configurationName("io.cucumber:cucumber-junit-platform-engine:$CUCUMBER_VERSION")
-        $configurationName("org.junit.jupiter:junit-jupiter")
-        $configurationName("org.junit.platform:junit-platform-suite")
+        testImplementation(platform("org.junit:junit-bom:$JUNIT_JUPITER_VERSION"))
+        testImplementation("io.cucumber:cucumber-java:$CUCUMBER_VERSION")
+        testImplementation("io.cucumber:cucumber-junit-platform-engine:$CUCUMBER_VERSION")
+        testImplementation("org.junit.jupiter:junit-jupiter")
+        testImplementation("org.junit.platform:junit-platform-suite")
         """.stripIndent(true)
     }
 }
