@@ -51,7 +51,6 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     def "companion task can be registered"(BuildScriptLanguage buildScriptLanguage) {
         given:
         setupPlugin(buildScriptLanguage)
-        createFeatureFiles(workspace)
 
         when:
         def result = run("tasks", "--all")
