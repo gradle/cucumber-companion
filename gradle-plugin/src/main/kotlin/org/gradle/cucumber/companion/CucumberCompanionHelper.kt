@@ -27,12 +27,6 @@ fun generateCucumberSuiteCompanion(
     sourceSet: SourceSet,
     name: String
 ) {
-    // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
-    val testResourcesDir = sourceSet.resources.srcDirs.first()
-    if (!testResourcesDir.exists()) {
-        return
-    }
-
     val companionTask = taskContainer.register(
         "${name}GenerateCucumberSuiteCompanion",
         GenerateCucumberSuiteCompanionTask::class.java
@@ -40,7 +34,8 @@ fun generateCucumberSuiteCompanion(
     val outputDir = buildDirectory.dir("generated-sources/cucumberCompanion-$name")
 
     companionTask.configure {
-        this.cucumberFeatureSources.set(testResourcesDir)
+        // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
+        this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
         this.outputDirectory.set(outputDir)
     }
     sourceSet.java.srcDir(outputDir)
