@@ -15,7 +15,7 @@ import kotlin.io.path.writeText
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
 
-    @get:[Incremental InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
+    @get:[SkipWhenEmpty InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
     abstract val cucumberFeatureSources: DirectoryProperty
 
     @get:OutputDirectory
