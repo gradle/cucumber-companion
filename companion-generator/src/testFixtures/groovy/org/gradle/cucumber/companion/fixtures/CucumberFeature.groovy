@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Language
 @CompileStatic
 enum CucumberFeature {
     ProductSearch(
+        ExpectedOutcome.SUCCESS,
         "Product Search",
         '',
         'Users can search for products',
@@ -43,7 +44,10 @@ enum CucumberFeature {
            }
         '''.stripIndent(true)
     ),
-    ShoppingCart('Shopping Cart',
+
+    ShoppingCart(
+        ExpectedOutcome.SUCCESS,
+        'Shopping Cart',
         '',
         'Users can add and remove items from the shopping cart',
         '''\
@@ -80,7 +84,9 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    UserRegistration('User Registration',
+    UserRegistration(
+        ExpectedOutcome.SUCCESS,
+        'User Registration',
         'user',
         'New users can create an account',
         '''\
@@ -119,7 +125,9 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    PasswordReset('Password Reset',
+    PasswordReset(
+        ExpectedOutcome.SUCCESS,
+        'Password Reset',
         'user',
         'Users can reset their password',
         '''\
@@ -162,7 +170,9 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    UserProfile('User Profile',
+    UserProfile(
+        ExpectedOutcome.SUCCESS,
+        'User Profile',
         'user',
         'Users can update their profile information',
         '''\
@@ -209,9 +219,46 @@ enum CucumberFeature {
                 }
             }
         '''.stripIndent(true)
+    ),
+
+    FailingFeature(
+        ExpectedOutcome.FAILED,
+        'Failing Feature',
+        'failing',
+        'A feature which does not succeed when executed',
+        '''\
+            Feature: Failing Feature
+              Scenario: A feature which does not succeed when executed
+                Given an arbitrary precondition
+                Then a condition that fails
+        '''.stripIndent(true),
+        '''\
+            package failing;
+
+            import io.cucumber.java.en.Given;
+            import io.cucumber.java.en.When;
+            import io.cucumber.java.en.Then;
+
+            import org.junit.jupiter.api.Assertions;
+
+            public class FailingFeatureSteps {
+
+                @Given("an arbitrary precondition")
+                public void anArbitraryPrecondition() {
+                    // just a stub
+                }
+
+                @Then("a condition that fails")
+                public void aConditionThatFails() {
+                    Assertions.fail("This Test always fails");
+                }
+            }
+        '''.stripIndent(true)
     );
 
     static final List<CucumberFeature> ALL_FEATURES = Collections.unmodifiableList(values() as List<CucumberFeature>)
+    static final List<CucumberFeature> ALL_SUCCEEDING_FEATURES = Collections.unmodifiableList(
+        values().findAll { it.expectedOutcome == ExpectedOutcome.SUCCESS } as List<CucumberFeature>)
 
     final String featureName
     final String packageName
@@ -224,13 +271,17 @@ enum CucumberFeature {
     final String featureFilePath
     final String stepFilePath
 
+    final ExpectedOutcome expectedOutcome
+
     CucumberFeature(
+        ExpectedOutcome expectedOutcome,
         String featureName,
         String packageName,
         String scenarioName,
         @Language("gherkin") String featureFileContent,
         @Language("JAVA") String stepFileContent
     ) {
+        this.expectedOutcome = expectedOutcome
         this.featureName = featureName
         this.packageName = packageName
         this.scenarioName = scenarioName
@@ -259,5 +310,9 @@ enum CucumberFeature {
 
     static List<CucumberFeature> all() {
         ALL_FEATURES
+    }
+
+    static List<CucumberFeature> allSucceeding() {
+        ALL_SUCCEEDING_FEATURES
     }
 }

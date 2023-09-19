@@ -7,6 +7,7 @@ import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
+import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -71,21 +72,48 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
-    def "generated companion files are picked up by Gradle's test task"() {
+    def "generated companion files are picked up by Gradle's test task and tests succeed"() {
         given:
+        def succeedingFeatures = CucumberFeature.allSucceeding()
         setupPlugin(buildScriptLanguage, variant)
-        createFeatureFiles(workspace)
-        createStepFiles(workspace)
+        createFeatureFiles(workspace, succeedingFeatures)
+        createStepFiles(workspace, succeedingFeatures)
 
         when:
         def result = run("test")
 
         then:
-        CucumberFeature.all()
+        succeedingFeatures
             .collect { it.toExpectedTestTaskOutput("PASSED") }
             .every {
                 result.output.contains(it)
             }
+
+        and:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+
+        where:
+        [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
+    }
+
+    def "can run failing cucumber test"() {
+        def failingFeatures = [CucumberFeature.FailingFeature]
+        setupPlugin(buildScriptLanguage, variant)
+        createFeatureFiles(workspace, failingFeatures)
+        createStepFiles(workspace, failingFeatures)
+
+        when:
+        def result = runAndFail("test")
+
+        then:
+        failingFeatures
+            .collect { it.toExpectedTestTaskOutput("FAILED") }
+            .every {
+                result.output.contains(it)
+            }
+
+        and:
+        result.task(":test").outcome == TaskOutcome.FAILED
 
         where:
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()

@@ -9,13 +9,13 @@ import spock.util.io.FileSystemFixture
 class CucumberFixture {
 
     @Memoized
-    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', List<CucumberFeature> features = CucumberFeature.all()) {
+    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         features.collect {
             ExpectedCompanionFile.create(it.featureName, it.packageName, suffix)
         }
     }
 
-    void createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.all()) {
+    void createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/resources") {
                 features.each {
@@ -25,7 +25,7 @@ class CucumberFixture {
         }
     }
 
-    void createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.all()) {
+    void createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/java") {
                 features.each {
