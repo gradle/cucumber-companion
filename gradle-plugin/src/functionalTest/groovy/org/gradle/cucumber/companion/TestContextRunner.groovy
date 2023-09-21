@@ -29,7 +29,7 @@ class TestContextRunner {
     private GradleRunner createRunner(String... arguments) {
         List args = arguments as List
         if (CONFIGURATION_CACHE) {
-            if (!(args.contains('--configuration-cache') || args.contains('--configuration-cache'))) {
+            if (!(args.contains('--configuration-cache') || args.contains('--no-configuration-cache'))) {
                 args << '--configuration-cache'
             }
         }
