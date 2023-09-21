@@ -296,11 +296,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             testing {
                 suites {
                     test {
+                        useJUnitJupiter("$JUNIT_JUPITER_VERSION")
                         cucumberCompanion.generateCucumberSuiteCompanion(delegate)
                         targets {
                             all {
                                 testTask.configure {
-                                    useJUnitPlatform()
                                     testLogging {
                                         events("standardOut", "passed", "failed")
                                     }
@@ -337,11 +337,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             testing {
                 suites {
                     val test by getting(JvmTestSuite::class) {
+                        useJUnitJupiter("$JUNIT_JUPITER_VERSION")
                         generateCucumberSuiteCompanion(project)
                         targets {
                             all {
                                 testTask.configure {
-                                    useJUnitPlatform()
                                     testLogging {
                                         events("standardOut", "passed", "failed")
                                     }
