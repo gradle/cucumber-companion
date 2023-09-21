@@ -41,9 +41,4 @@ public class CompanionGenerator {
     private static void ensureParentDirectoryExists(Path destination) throws IOException {
         Files.createDirectories(destination.getParent());
     }
-
-    public static void update(CompanionFile companionFile) {
-        // This means that the source file was modified in some way,
-        // but since we currently only care about the file name, we can ignore it for now.
-    }
 }

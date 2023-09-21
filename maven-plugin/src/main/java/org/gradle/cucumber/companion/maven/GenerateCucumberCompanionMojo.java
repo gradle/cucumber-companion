@@ -17,6 +17,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @Mojo(name = "generate-cucumber-companion-files", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
 public class GenerateCucumberCompanionMojo extends AbstractMojo {
@@ -82,7 +83,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
             return 0;
         }
 
-        try (java.util.stream.Stream<Path> stream = Files.walk(_testResourcesDirectory)) {
+        try (Stream<Path> stream = Files.walk(_testResourcesDirectory)) {
             return stream.filter(p -> p.getFileName().toString().endsWith(".feature"))
                 .map(p -> new CompanionFile(_testResourcesDirectory, _generatedSourcesDirectory, p, generatedFileNameSuffix))
                 .mapToInt(companionFile -> {
