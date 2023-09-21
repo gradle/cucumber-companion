@@ -7,7 +7,10 @@ import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
+import org.gradle.cucumber.companion.testcontext.TestContext
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.util.GradleVersion
+import org.gradle.util.internal.DefaultGradleVersion
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -17,8 +20,8 @@ import java.nio.file.Path
 
 class CucumberCompanionPluginFunctionalTest extends Specification {
 
-    static final String CUCUMBER_VERSION = "7.14.0"
-    static final String JUNIT_JUPITER_VERSION = "5.10.0"
+    static final String CUCUMBER_VERSION = TestContext.getRequiredValue("cucumberVersion")
+    static final String JUNIT_VERSION = TestContext.getRequiredValue("junitVersion")
 
     @TempDir
     FileSystemFixture workspace
@@ -310,7 +313,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             testing {
                 suites {
                     test {
-                        useJUnitJupiter("$JUNIT_JUPITER_VERSION")
+                        useJUnitJupiter("$JUNIT_VERSION")
                         cucumberCompanion.generateCucumberSuiteCompanion(delegate)
                         targets {
                             all {
@@ -351,7 +354,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             testing {
                 suites {
                     val test by getting(JvmTestSuite::class) {
-                        useJUnitJupiter("$JUNIT_JUPITER_VERSION")
+                        useJUnitJupiter("$JUNIT_VERSION")
                         generateCucumberSuiteCompanion(project)
                         targets {
                             all {
@@ -370,7 +373,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
     def dependenciesRequiredForExecution() {
         return """\
-        testImplementation(platform("org.junit:junit-bom:$JUNIT_JUPITER_VERSION"))
+        testImplementation(platform("org.junit:junit-bom:$JUNIT_VERSION"))
         testImplementation("io.cucumber:cucumber-java:$CUCUMBER_VERSION")
         testImplementation("io.cucumber:cucumber-junit-platform-engine:$CUCUMBER_VERSION")
         testImplementation("org.junit.jupiter:junit-jupiter")

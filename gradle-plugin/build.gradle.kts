@@ -8,6 +8,7 @@ plugins {
     `kotlin-dsl`
     id("com.gradle.plugin-publish") version "1.2.1"
     id("conventions.publishing")
+    id("conventions.test-context")
 }
 
 project.description = "Gradle Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -25,6 +26,13 @@ val crossVersions = listOf(
     CrossVersionTest("7.3", false), // lowest supported versions as jvm-test-suites was added here
     CrossVersionTest(GradleVersion.current().version, true),
 )
+
+testContext {
+    mappings = mapOf(
+        "junitVersion" to libs.versions.junit.get(),
+        "cucumberVersion" to libs.versions.cucumber.get()
+    )
+}
 
 tasks.withType<ShadowJar>().configureEach {
     archiveClassifier = ""

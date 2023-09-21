@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.mavenPluginDevelopment)
     id("conventions.maven-plugin-testing")
     id("conventions.publishing")
+    id("conventions.test-context")
 }
 
 project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -53,6 +54,15 @@ val functionalTest by testing.suites.getting(JvmTestSuite::class) {
         implementation(libs.groovy.xml)
         implementation(testFixtures(projects.companionGenerator))
     }
+}
+
+testContext {
+    mappings = mapOf(
+        "junitVersion" to libs.versions.junit.get(),
+        "cucumberVersion" to libs.versions.cucumber.get(),
+        "surefireVersion" to libs.versions.surefire.get(),
+        "failsafeVersion" to libs.versions.failsafe.get()
+    )
 }
 
 mavenPluginTesting {

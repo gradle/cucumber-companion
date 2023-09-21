@@ -4,12 +4,18 @@ groovy = "3.0.17"
 spock = "2.3-groovy-3.0"
 mavenMinCompatible = "3.8.6"
 mavenMaxCompatible = "3.9.1"
+junit = "5.10.0"
+cucumber = "7.14.0"
+surefire = "3.1.2"
+failsafe = "3.1.2"
 
 [libraries]
+cucumber-bom = { module = "io.cucumber:cucumber-bom", version.ref = "cucumber" }
 groovy-bom = { module = "org.codehaus.groovy:groovy-bom", version.ref = "groovy" }
 groovy-core.module = "org.codehaus.groovy:groovy"
 groovy-nio.module = "org.codehaus.groovy:groovy-nio"
 groovy-xml.module = "org.codehaus.groovy:groovy-xml"
+junit5-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 spock-bom = { module = "org.spockframework:spock-bom", version.ref = "spock" }
 spock-core.module = "org.spockframework:spock-core"
 maven-core = { module = "org.apache.maven:maven-core", version.ref = "mavenMaxCompatible" }
@@ -18,6 +24,8 @@ maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin
 takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.1" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.0.1" }
 shadow = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
+surefirePlugin = { module = "org.apache.maven.plugins:maven-surefire-plugin", version.ref = "surefire" }
+failsafePlugin = { module = "org.apache.maven.plugins:maven-failsafe-plugin", version.ref = "failsafe" }
 
 [plugins]
 mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }

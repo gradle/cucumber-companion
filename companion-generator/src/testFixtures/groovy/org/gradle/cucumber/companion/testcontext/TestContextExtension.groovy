@@ -1,4 +1,4 @@
-package org.gradle.cucumber.companion
+package org.gradle.cucumber.companion.testcontext
 
 import org.spockframework.runtime.extension.IGlobalExtension
 import org.spockframework.runtime.model.SpecInfo
