@@ -6,8 +6,10 @@ import org.intellij.lang.annotations.Language
 @CompileStatic
 enum CucumberFeature {
     ProductSearch(
+        ExpectedOutcome.SUCCESS,
         "Product Search",
         '',
+        'Users can search for products',
         '''\
             Feature: Product Search
               Scenario: Users can search for products
@@ -42,8 +44,12 @@ enum CucumberFeature {
            }
         '''.stripIndent(true)
     ),
-    ShoppingCart('Shopping Cart',
+
+    ShoppingCart(
+        ExpectedOutcome.SUCCESS,
+        'Shopping Cart',
         '',
+        'Users can add and remove items from the shopping cart',
         '''\
             Feature: Shopping Cart
               Scenario: Users can add and remove items from the shopping cart
@@ -78,8 +84,11 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    UserRegistration('User Registration',
+    UserRegistration(
+        ExpectedOutcome.SUCCESS,
+        'User Registration',
         'user',
+        'New users can create an account',
         '''\
             Feature: User Registration
               Scenario: New users can create an account
@@ -116,8 +125,11 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    PasswordReset('Password Reset',
+    PasswordReset(
+        ExpectedOutcome.SUCCESS,
+        'Password Reset',
         'user',
+        'Users can reset their password',
         '''\
             Feature: Password Reset
               Scenario: Users can reset their password
@@ -158,8 +170,11 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    UserProfile('User Profile',
+    UserProfile(
+        ExpectedOutcome.SUCCESS,
+        'User Profile',
         'user',
+        'Users can update their profile information',
         '''\
             Feature: User Profile
               Scenario: Users can update their profile information
@@ -204,12 +219,50 @@ enum CucumberFeature {
                 }
             }
         '''.stripIndent(true)
+    ),
+
+    FailingFeature(
+        ExpectedOutcome.FAILED,
+        'Failing Feature',
+        'failing',
+        'A feature which does not succeed when executed',
+        '''\
+            Feature: Failing Feature
+              Scenario: A feature which does not succeed when executed
+                Given an arbitrary precondition
+                Then a condition that fails
+        '''.stripIndent(true),
+        '''\
+            package failing;
+
+            import io.cucumber.java.en.Given;
+            import io.cucumber.java.en.When;
+            import io.cucumber.java.en.Then;
+
+            import org.junit.jupiter.api.Assertions;
+
+            public class FailingFeatureSteps {
+
+                @Given("an arbitrary precondition")
+                public void anArbitraryPrecondition() {
+                    // just a stub
+                }
+
+                @Then("a condition that fails")
+                public void aConditionThatFails() {
+                    Assertions.fail("This Test always fails");
+                }
+            }
+        '''.stripIndent(true)
     );
 
     static final List<CucumberFeature> ALL_FEATURES = Collections.unmodifiableList(values() as List<CucumberFeature>)
+    static final List<CucumberFeature> ALL_SUCCEEDING_FEATURES = Collections.unmodifiableList(
+        values().findAll { it.expectedOutcome == ExpectedOutcome.SUCCESS } as List<CucumberFeature>)
 
     final String featureName
     final String packageName
+    final String scenarioName
     final String featureFileContent
     final String stepFileContent
 
@@ -218,14 +271,20 @@ enum CucumberFeature {
     final String featureFilePath
     final String stepFilePath
 
+    final ExpectedOutcome expectedOutcome
+
     CucumberFeature(
+        ExpectedOutcome expectedOutcome,
         String featureName,
         String packageName,
+        String scenarioName,
         @Language("gherkin") String featureFileContent,
         @Language("JAVA") String stepFileContent
     ) {
+        this.expectedOutcome = expectedOutcome
         this.featureName = featureName
         this.packageName = packageName
+        this.scenarioName = scenarioName
         this.featureFileContent = featureFileContent
         this.stepFileContent = stepFileContent
 
@@ -233,6 +292,13 @@ enum CucumberFeature {
         this.relativePath = packageName.replaceAll(/\./, '/')
         this.featureFilePath = joinToPath(relativePath, featureName + ".feature")
         this.stepFilePath = joinToPath(relativePath, featureName.replaceAll("[^a-zA-Z0-9_]", "") + "Steps.java")
+    }
+
+    String toExpectedTestTaskOutput(String outcome = "PASSED") {
+        // Gives a string like this:
+        // "User_Profile > Cucumber > User Profile > user.User_Profile.Users can update their profile information PASSED"
+        def packagePrefix = packageName.empty ? "" : packageName + "."
+        return "$className > Cucumber > $featureName > $packagePrefix$className.$scenarioName $outcome"
     }
 
     private static String joinToPath(String path, String fileName) {
@@ -244,5 +310,9 @@ enum CucumberFeature {
 
     static List<CucumberFeature> all() {
         ALL_FEATURES
+    }
+
+    static List<CucumberFeature> allSucceeding() {
+        ALL_SUCCEEDING_FEATURES
     }
 }

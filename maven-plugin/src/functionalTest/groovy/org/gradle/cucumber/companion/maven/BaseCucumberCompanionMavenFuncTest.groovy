@@ -12,7 +12,7 @@ import java.nio.file.Path
 class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
 
     static final String JUNIT_VERSION = "5.10.0"
-    static final String CUCUMBER_VERSION = "7.12.1"
+    static final String CUCUMBER_VERSION = "7.14.0"
     static final String SUREFIRE_VERSION = "3.1.2"
     static final String FAILSAFE_VERSION = SUREFIRE_VERSION
 
