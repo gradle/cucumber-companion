@@ -79,6 +79,10 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     }
 
     private int createCompanionFiles(Path _testResourcesDirectory) throws MojoExecutionException {
+        if (!Files.exists(_testResourcesDirectory)) {
+            return 0;
+        }
+
         try (Stream<Path> stream = Files.walk(_testResourcesDirectory)) {
             return stream.filter(p -> p.getFileName().toString().endsWith(".feature"))
                 .map(p -> new CompanionFile(_testResourcesDirectory, _generatedSourcesDirectory, p, generatedFileNameSuffix))

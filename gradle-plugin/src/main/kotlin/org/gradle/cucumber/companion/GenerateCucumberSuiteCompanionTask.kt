@@ -12,7 +12,7 @@ import java.nio.file.Files
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
 
-    @get:[Incremental InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
+    @get:[SkipWhenEmpty InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
     abstract val cucumberFeatureSources: DirectoryProperty
 
     @get:OutputDirectory

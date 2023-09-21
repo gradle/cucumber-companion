@@ -7,6 +7,7 @@ import org.gradle.cucumber.companion.fixtures.CompanionAssertions
 import org.gradle.cucumber.companion.fixtures.CucumberFeature
 import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
+import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -31,6 +32,20 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
     def setup() {
         runner = new TestContextRunner(workspace.currentPath)
+    }
+
+    def "should not fail if resources folder does not exist"(BuildScriptLanguage buildScriptLanguage) {
+        given:
+        setupPlugin(buildScriptLanguage)
+
+        when:
+        def result = run("test")
+
+        then:
+        result.task(":testGenerateCucumberSuiteCompanion").outcome == TaskOutcome.NO_SOURCE
+
+        where:
+        buildScriptLanguage << BuildScriptLanguage.values()
     }
 
     def "companion task can be registered"(BuildScriptLanguage buildScriptLanguage) {
