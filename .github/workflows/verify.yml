@@ -1,22 +1,22 @@
 name: 'Verify'
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
+  push:
+    branches:
+    - main
+  pull_request:
 
 jobs:
-    build-and-verify:
-        runs-on: 'ubuntu-latest'
-        steps:
-            - uses: actions/checkout@v3
-            - name: "Setup Build Environment"
-              uses: ./.github/actions/setup-environment
+  build-and-verify:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: actions/checkout@v3
+    - name: "Setup Build Environment"
+      uses: ./.github/actions/setup-environment
 
-            - name: 'Build Cucumber-Companion'
-              uses: gradle/gradle-build-action@v2
-              env:
-                GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
-              with:
-                  arguments: "check --no-configuration-cache"
+    - name: 'Build Cucumber-Companion'
+      uses: gradle/gradle-build-action@v2
+      env:
+        GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
+      with:
+        arguments: "check --no-configuration-cache"

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class CompanionFile {
+
     private static final Pattern VALID_PACKAGE_ELEMENTS = Pattern.compile("[^a-zA-Z0-9_$]");
     private static final Pattern VALID_CLASS_NAME = Pattern.compile("[^a-zA-Z0-9_]");
     private final Path actual;
@@ -20,6 +21,7 @@ public class CompanionFile {
     public CompanionFile(Path sourceDir, Path destinationDir, Path actual) {
         this(sourceDir, destinationDir, actual, "");
     }
+
     public CompanionFile(Path sourceDir, Path destinationDir, Path actual, String suffix) {
         if (!actual.getFileName().toString().endsWith(".feature")) {
             throw new IllegalArgumentException("The passed parameter was not a feature file:" + actual);

@@ -1,10 +1,4 @@
-import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.registerTransform
-import java.util.concurrent.TimeUnit
 
 extensions.create<MavenDistributionExtension>("mavenDistributions").apply {
     downloadAndExtractMavenDistro(versions)
