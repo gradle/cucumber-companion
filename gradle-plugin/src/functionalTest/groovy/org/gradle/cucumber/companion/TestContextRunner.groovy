@@ -1,13 +1,18 @@
 package org.gradle.cucumber.companion
 
 import groovy.transform.TupleConstructor
+import org.gradle.cucumber.companion.testcontext.TestContext
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
+import org.gradle.util.internal.DefaultGradleVersion
 
 import java.nio.file.Path
 
 @TupleConstructor
 class TestContextRunner {
+    static final GradleVersion GRADLE_VERSION = DefaultGradleVersion.version(TestContext.getRequiredValue("gradleVersion"))
+    static final boolean CONFIGURATION_CACHE = TestContext.getRequiredBoolean("configurationCache")
 
     final Path workspaceRoot
 
@@ -23,8 +28,8 @@ class TestContextRunner {
 
     private GradleRunner createRunner(String... arguments) {
         List args = arguments as List
-        if (TestContext.configurationCache) {
-            if (!(args.contains('--configuration-cache') || args.contains('--configuration-cache'))) {
+        if (CONFIGURATION_CACHE) {
+            if (!(args.contains('--configuration-cache') || args.contains('--no-configuration-cache'))) {
                 args << '--configuration-cache'
             }
         }
@@ -32,7 +37,7 @@ class TestContextRunner {
             .forwardOutput()
             .withPluginClasspath()
             .withProjectDir(workspaceRoot.toFile())
-            .withGradleVersion(TestContext.gradleVersion.version)
+            .withGradleVersion(GRADLE_VERSION.version)
             .withArguments(args)
         runner
     }
