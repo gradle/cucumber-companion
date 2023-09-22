@@ -3,12 +3,9 @@ package org.gradle.cucumber.companion.testcontext
 class TestContext {
 
     private static final String PREFIX = "testContext.internal."
-    private static final Map<String, String> CONTEXT;
-    static {
-        CONTEXT = System.getProperties()
-            .findAll { it.toString().startsWith(PREFIX) }
-            .collectEntries { [it.key.toString().substring(PREFIX.length()), it.value.toString()] }
-    }
+    private static final Map<String, String> CONTEXT = System.properties
+            .findAll {  String k, String v -> k.startsWith(PREFIX) }
+            .collectEntries { String k, String v -> [k.substring(PREFIX.length()), v] }
 
     static String getRequiredValue(String key) {
         def value = CONTEXT.get(key)
