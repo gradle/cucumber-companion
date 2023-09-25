@@ -63,26 +63,26 @@ val functionalTestTask = tasks.named<Test>("functionalTest") {
 }
 
 val allMavenCrossVersionTests = extension.mavenVersions
-        .map { mavenVersions ->
-            mavenVersions.map { mavenVersion ->
-                val mavenDistributions = project.the<MavenDistributionExtension>()
+    .map { mavenVersions ->
+        mavenVersions.map { mavenVersion ->
+            val mavenDistributions = project.the<MavenDistributionExtension>()
 
-                tasks.register<Test>("functionalTest_maven_${mavenVersion}") {
-                    val templateTask = functionalTestTask.get()
-                    classpath = templateTask.classpath
-                    testClassesDirs = templateTask.testClassesDirs
-                    useJUnitPlatform()
-                    group = "Cross Version"
-                    description = "Test with Maven $mavenVersion"
+            tasks.register<Test>("functionalTest_maven_${mavenVersion}") {
+                val templateTask = functionalTestTask.get()
+                classpath = templateTask.classpath
+                testClassesDirs = templateTask.testClassesDirs
+                useJUnitPlatform()
+                group = "Cross Version"
+                description = "Test with Maven $mavenVersion"
 
-                    javaLauncher.set(templateTask.javaLauncher)
-                    environment(templateTask.environment)
+                javaLauncher.set(templateTask.javaLauncher)
+                environment(templateTask.environment)
 
-                    val mavenDistribution = mavenDistributions.versions.maybeCreate(mavenVersion)
-                    jvmArgumentProviders += mavenDistribution
-                }
+                val mavenDistribution = mavenDistributions.versions.maybeCreate(mavenVersion)
+                jvmArgumentProviders += mavenDistribution
             }
         }
+    }
 
 tasks.register("allMavenCrossVersionTests") {
     dependsOn(allMavenCrossVersionTests)

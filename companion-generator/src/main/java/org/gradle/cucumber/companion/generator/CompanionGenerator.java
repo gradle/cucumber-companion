@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class CompanionGenerator {
+
     public static CompanionFile resolve(Path sourceDir, Path targetDir, Path actual) {
         return new CompanionFile(sourceDir, targetDir, actual);
     }

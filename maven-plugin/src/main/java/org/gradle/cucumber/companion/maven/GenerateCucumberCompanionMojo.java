@@ -13,7 +13,11 @@ import org.gradle.cucumber.companion.generator.CompanionFile;
 import org.gradle.cucumber.companion.generator.CompanionGenerator;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.function.Supplier;
@@ -21,13 +25,13 @@ import java.util.stream.Stream;
 
 @Mojo(name = "generate-cucumber-companion-files", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
 public class GenerateCucumberCompanionMojo extends AbstractMojo {
+
     @Parameter(defaultValue = "${project.testResources}", required = true, readonly = true)
     private List<Resource> testResources;
 
     @Parameter(defaultValue = "${project.build.directory}/generated-test-sources/cucumberCompanion", required = true)
     private String generatedSourcesDirectory;
     private Path _generatedSourcesDirectory;
-
 
     @Parameter(defaultValue = "Test", required = true)
     private String generatedFileNameSuffix;

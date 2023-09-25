@@ -25,7 +25,7 @@ class MavenDistribution {
 
     static MavenDistribution theSingleMavenDistribution() {
         def distributions = allDistributions()
-        assert !distributions.empty : "No maven distributions found. Provide the path to a maven home directory via environment variable ${TEST_CONTEXT_PREFIX}.<identifier>"
+        assert !distributions.empty: "No maven distributions found. Provide the path to a maven home directory via environment variable ${TEST_CONTEXT_PREFIX}.<identifier>"
         return distributions.get(0)
     }
 
