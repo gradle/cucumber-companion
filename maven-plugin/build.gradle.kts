@@ -37,8 +37,9 @@ verifyPublication {
             aFile("META-INF/maven/org.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
                 matching { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
-            // Test for shadowed file
+            // Test for shadowed files
             aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("META-INF/LICENSE")
         }
     }
 }
@@ -98,6 +99,9 @@ project.afterEvaluate {
     val sourceSet = extensions.getByType(MavenPluginDevelopmentExtension::class).pluginSourceSet.get()
     tasks.named<ShadowJar>("shadowJar").configure {
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
+        from(file("../LICENSE")) {
+            into("META-INF")
+        }
     }
     sourceSet.java.srcDir(
         tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })

@@ -36,6 +36,9 @@ testContext {
 
 tasks.withType<ShadowJar>().configureEach {
     archiveClassifier = ""
+    from(file("../LICENSE")) {
+        into("META-INF")
+    }
 }
 
 java {
@@ -54,6 +57,11 @@ verifyPublication {
         // dependencies should be shadowed
         withPomFileContentMatching { content -> !content.contains("<dependencies>") }
         withPomFileMatchingMavenCentralRequirements()
+        withJarContaining {
+            // Test for shadowed files
+            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("META-INF/LICENSE")
+        }
     }
     expectPublishedArtifact("org.gradle.cucumber.companion.gradle.plugin") {
         withPomFileMatchingMavenCentralRequirements()
@@ -106,6 +114,9 @@ gradlePlugin {
     val cucumberCompanion by plugins.creating {
         id = "org.gradle.cucumber.companion"
         implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
+        displayName = "Cucumber Companion Plugin"
+        description = project.description
+        tags.addAll("cucumber", "test")
     }
 }
 
