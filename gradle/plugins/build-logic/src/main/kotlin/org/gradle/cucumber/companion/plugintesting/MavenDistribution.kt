@@ -1,3 +1,5 @@
+package org.gradle.cucumber.companion.plugintesting
+
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*

@@ -1,3 +1,5 @@
+package org.gradle.cucumber.companion.testcontext
+
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.Input
 import org.gradle.process.CommandLineArgumentProvider
