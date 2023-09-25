@@ -14,6 +14,7 @@ plugins {
     id("conventions.maven-plugin-testing")
     id("conventions.publishing")
     id("conventions.test-context")
+    id("conventions.verify-publication")
 }
 
 project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -22,6 +23,24 @@ val mavenPluginArtifactId = "cucumber-companion-maven-plugin"
 mavenPlugin {
     artifactId.set(mavenPluginArtifactId)
     dependencies = configurations.named("shadow")
+}
+
+verifyPublication {
+    expectPublishedArtifact("cucumber-companion-maven-plugin") {
+        withClassifiers("", "javadoc", "sources")
+        // dependencies should be shadowed
+        withPomFileContentMatching { content -> !content.contains("<dependencies>") }
+        withPomFileMatchingMavenCentralRequirements()
+
+        withJarContaining {
+            aFile("META-INF/maven/plugin.xml")
+            aFile("META-INF/maven/org.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
+                matching { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
+            }
+            // Test for shadowed file
+            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+        }
+    }
 }
 
 java {

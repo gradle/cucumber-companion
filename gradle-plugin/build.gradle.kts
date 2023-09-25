@@ -2,13 +2,13 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-
 plugins {
     groovy
     `kotlin-dsl`
     id("com.gradle.plugin-publish") version "1.2.1"
     id("conventions.publishing")
     id("conventions.test-context")
+    id("conventions.verify-publication")
 }
 
 project.description = "Gradle Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -46,6 +46,18 @@ java {
 
 dependencies {
     implementation(projects.companionGenerator)
+}
+
+verifyPublication {
+    expectPublishedArtifact("cucumber-companion-gradle-plugin") {
+        withClassifiers("", "javadoc", "sources")
+        // dependencies should be shadowed
+        withPomFileContentMatching { content -> !content.contains("<dependencies>") }
+        withPomFileMatchingMavenCentralRequirements()
+    }
+    expectPublishedArtifact("org.gradle.cucumber.companion.gradle.plugin") {
+        withPomFileMatchingMavenCentralRequirements()
+    }
 }
 
 testing {
