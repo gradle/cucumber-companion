@@ -3,6 +3,8 @@ package org.gradle.cucumber.companion.fixtures
 import groovy.transform.CompileStatic
 import org.intellij.lang.annotations.Language
 
+import java.security.MessageDigest
+
 @CompileStatic
 enum CucumberFeature {
     ProductSearch(
@@ -169,6 +171,57 @@ enum CucumberFeature {
             }
         '''.stripIndent(true)
     ),
+    PasswordReset_V2(
+        ExpectedOutcome.SUCCESS,
+        'Password Reset',
+        'user',
+        'Users can reset their password',
+        '''\
+            Feature: Password Reset
+              Scenario: Users can reset their password
+                Given a user is on the password reset page
+                When they enter their email address
+                And enter the correct CAPTCHA solution
+                And click the "Reset Password" button
+                Then they should receive an email with instructions to reset their password
+        '''.stripIndent(true),
+        '''\
+            package user;
+
+            import io.cucumber.java.en.Given;
+            import io.cucumber.java.en.When;
+            import io.cucumber.java.en.Then;
+
+            public class PasswordResetSteps {
+
+                @Given("a user is on the password reset page")
+                public void userIsOnPasswordResetPage() {
+                    // Implementation code to navigate to the password reset page.
+                }
+
+                @When("they enter their email address")
+                public void enterEmailAddress() {
+                    // Implementation code for entering the user's email address.
+                }
+
+                @When("enter the correct CAPTCHA solution")
+                public void enterCorrectCaptcha() {
+                    // Implementation code for entering correct captcha.
+                }
+
+                @When("click the \\"Reset Password\\" button")
+                public void clickResetPasswordButton() {
+                    // Implementation code to simulate clicking the Reset Password button.
+                }
+
+                @Then("they should receive an email with instructions to reset their password")
+                public void verifyPasswordResetEmailSent() {
+                    // Implementation code to verify that the user receives the password reset email.
+                }
+            }
+        '''.stripIndent(true),
+        true
+    ),
 
     UserProfile(
         ExpectedOutcome.SUCCESS,
@@ -256,15 +309,16 @@ enum CucumberFeature {
         '''.stripIndent(true)
     );
 
-    static final List<CucumberFeature> ALL_FEATURES = Collections.unmodifiableList(values() as List<CucumberFeature>)
+    static final List<CucumberFeature> ALL_FEATURES = Collections.unmodifiableList(values().findAll { !it.isReplacement } as List<CucumberFeature>)
     static final List<CucumberFeature> ALL_SUCCEEDING_FEATURES = Collections.unmodifiableList(
-        values().findAll { it.expectedOutcome == ExpectedOutcome.SUCCESS } as List<CucumberFeature>)
+        values().findAll { it.expectedOutcome == ExpectedOutcome.SUCCESS && !it.isReplacement } as List<CucumberFeature>)
 
     final String featureName
     final String packageName
     final String scenarioName
     final String featureFileContent
     final String stepFileContent
+    final String contentHash
 
     final String relativePath
     final String className
@@ -272,6 +326,7 @@ enum CucumberFeature {
     final String stepFilePath
 
     final ExpectedOutcome expectedOutcome
+    final boolean isReplacement
 
     CucumberFeature(
         ExpectedOutcome expectedOutcome,
@@ -279,8 +334,10 @@ enum CucumberFeature {
         String packageName,
         String scenarioName,
         @Language("gherkin") String featureFileContent,
-        @Language("JAVA") String stepFileContent
+        @Language("JAVA") String stepFileContent,
+        boolean isReplacement = false
     ) {
+        this.isReplacement = isReplacement
         this.expectedOutcome = expectedOutcome
         this.featureName = featureName
         this.packageName = packageName
@@ -292,6 +349,7 @@ enum CucumberFeature {
         this.relativePath = packageName.replaceAll(/\./, '/')
         this.featureFilePath = joinToPath(relativePath, featureName + ".feature")
         this.stepFilePath = joinToPath(relativePath, featureName.replaceAll("[^a-zA-Z0-9_]", "") + "Steps.java")
+        this.contentHash = contentHash(featureFileContent)
     }
 
     String toExpectedTestTaskOutput(String outcome = "PASSED") {
@@ -299,6 +357,11 @@ enum CucumberFeature {
         // "User_Profile > Cucumber > User Profile > user.User_Profile.Users can update their profile information PASSED"
         def packagePrefix = packageName.empty ? "" : packageName + "."
         return "$className > Cucumber > $featureName > $packagePrefix$className.$scenarioName $outcome"
+    }
+
+    private static String contentHash(String input) {
+        MessageDigest md = MessageDigest.getInstance("SHA-256")
+        Base64.urlEncoder.encodeToString(md.digest(input.bytes))
     }
 
     private static String joinToPath(String path, String fileName) {

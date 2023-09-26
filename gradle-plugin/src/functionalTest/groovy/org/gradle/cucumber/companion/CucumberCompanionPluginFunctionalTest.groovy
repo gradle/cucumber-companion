@@ -9,8 +9,6 @@ import org.gradle.cucumber.companion.fixtures.CucumberFixture
 import org.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import org.gradle.cucumber.companion.testcontext.TestContext
 import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.util.GradleVersion
-import org.gradle.util.internal.DefaultGradleVersion
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -164,6 +162,19 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             companionAssertions.assertCompanionFile(it)
         }
 
+        when: "modifying an existing feature"
+        createFeatureFiles(workspace, [CucumberFeature.PasswordReset_V2])
+
+        and: "running the generate task again"
+        result = run("testGenerateCucumberSuiteCompanion")
+
+        then: "both companion files are present"
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        expectedCompanionFiles('', [CucumberFeature.ProductSearch, CucumberFeature.PasswordReset_V2]).forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
         when: "deleting a feature file"
         Files.delete(workspace.file("src/test/resources/${CucumberFeature.ProductSearch.featureFilePath}"))
 
@@ -173,7 +184,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "one companion remains"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [CucumberFeature.PasswordReset]).forEach {
+        expectedCompanionFiles('', [CucumberFeature.PasswordReset_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 

@@ -26,9 +26,10 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
                 val companionFile = CompanionGenerator.resolve(inputDir, outputDir, change.file.toPath())
                 when (change.changeType) {
                     ChangeType.ADDED -> CompanionGenerator.create(companionFile)
-                    // This means that the source file was modified in some way,
-                    // but since we currently only care about the file name, we can ignore it for now.
-                    ChangeType.MODIFIED -> {}
+                    ChangeType.MODIFIED -> {
+                        Files.deleteIfExists(companionFile.destination)
+                        CompanionGenerator.create(companionFile)
+                    }
                     ChangeType.REMOVED -> Files.deleteIfExists(companionFile.destination)
                     else -> {}
                 }

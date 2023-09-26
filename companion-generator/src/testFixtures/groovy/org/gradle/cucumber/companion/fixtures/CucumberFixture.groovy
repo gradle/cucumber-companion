@@ -11,7 +11,7 @@ class CucumberFixture {
     @Memoized
     List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         features.collect {
-            ExpectedCompanionFile.create(it.featureName, it.packageName, suffix)
+            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, suffix)
         }
     }
 
