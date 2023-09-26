@@ -20,7 +20,9 @@ class CompanionAssertions {
         def expected = """${companion.packageName ? "                    package $companion.packageName;\n\n" : ''}\
                     @org.junit.platform.suite.api.Suite
                     @org.junit.platform.suite.api.SelectClasspathResource("${companion.classPathResource}")
-                    class ${companion.className} {}
+                    class ${companion.className} {
+                        public static final String CONTENT_HASH = "${companion.contentHash}";
+                    }
                     """.stripIndent(true)
         assert companionFile.text == expected
     }

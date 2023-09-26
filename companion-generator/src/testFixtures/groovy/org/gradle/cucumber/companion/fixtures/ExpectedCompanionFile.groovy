@@ -11,15 +11,17 @@ class ExpectedCompanionFile {
     String className
     String packageName
     String classPathResource
+    String contentHash
 
-    static ExpectedCompanionFile create(String featureName, String packageName, String suffix = '') {
+    static ExpectedCompanionFile create(String featureName, String contentHash, String packageName, String suffix = '') {
         def safeName = featureName.replaceAll(" ", "_") + suffix
         new ExpectedCompanionFile(
             featureName,
             [packageName.replaceAll(/\./, '/'), safeName + ".java"].findAll().join("/"),
             safeName,
             packageName,
-            [packageName.replaceAll(/\./, '/'), featureName + ".feature"].findAll().join("/")
+            [packageName.replaceAll(/\./, '/'), featureName + ".feature"].findAll().join("/"),
+            contentHash
         )
     }
 }

@@ -51,6 +51,10 @@ public class CompanionFile {
         return originalFileName.substring(0, originalFileName.lastIndexOf('.'));
     }
 
+    public Path getSource() {
+        return actual;
+    }
+
     public Path getDestination() {
         return destination;
     }

@@ -2,9 +2,13 @@ package org.gradle.cucumber.companion.generator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class CompanionGenerator {
 
@@ -32,7 +36,13 @@ public class CompanionGenerator {
             bw.newLine();
             bw.write("class ");
             bw.write(companionFile.getFeatureName());
-            bw.write(" {}");
+            bw.write(" {");
+            bw.newLine();
+            bw.write("    public static final String CONTENT_HASH = \"");
+            bw.write(generateFileHash(companionFile.getSource()));
+            bw.write("\";");
+            bw.newLine();
+            bw.write("}");
             bw.newLine();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -41,5 +51,24 @@ public class CompanionGenerator {
 
     private static void ensureParentDirectoryExists(Path destination) throws IOException {
         Files.createDirectories(destination.getParent());
+    }
+
+    private static String generateFileHash(Path actual) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            try (InputStream fis = Files.newInputStream(actual)) {
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    md.update(buffer, 0, bytesRead);
+                }
+            }
+            byte[] hash = md.digest();
+            return Base64.getUrlEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            return "<No SHA-256 algorithm available>";
+        } catch (IOException e) {
+            return "<Could not read source file>";
+        }
     }
 }
