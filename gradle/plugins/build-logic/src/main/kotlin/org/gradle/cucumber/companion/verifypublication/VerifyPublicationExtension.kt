@@ -11,7 +11,7 @@ abstract class VerifyPublicationExtension {
         val NAME = "verifyPublication"
     }
 
-    private val artifacts: MutableList<PublishedArtifactRule> = mutableListOf()
+    val artifacts: MutableList<PublishedArtifactRule> = mutableListOf()
 
     @get:Input
     abstract val verificationRepoDir: DirectoryProperty
@@ -22,14 +22,5 @@ abstract class VerifyPublicationExtension {
         artifacts.add(pa)
     }
 
-    fun verify(version: String, groupId: String, zip: (path: Any) -> FileTree) {
-        val publicationBasePath = verificationRepoDir
-            .map { it.dir(groupId.replace(".", File.separator)) }
-            .get()
 
-        val files = publicationBasePath.asFile.list()?.size
-        require(files == artifacts.size) { "Expected ${artifacts.size} published artifacts but was $files" }
-
-        artifacts.forEach { it.verify(version, groupId, publicationBasePath, zip) }
-    }
 }

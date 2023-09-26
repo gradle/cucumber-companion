@@ -29,13 +29,13 @@ verifyPublication {
     expectPublishedArtifact("cucumber-companion-maven-plugin") {
         withClassifiers("", "javadoc", "sources")
         // dependencies should be shadowed
-        withPomFileContentMatching { content -> !content.contains("<dependencies>") }
+        withPomFileContentMatching("Should have no <dependencies>") { content -> !content.contains("<dependencies>") }
         withPomFileMatchingMavenCentralRequirements()
 
         withJarContaining {
             aFile("META-INF/maven/plugin.xml")
             aFile("META-INF/maven/org.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
-                matching { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
+                matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
             // Test for shadowed files
             aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")

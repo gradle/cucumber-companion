@@ -55,7 +55,7 @@ verifyPublication {
     expectPublishedArtifact("cucumber-companion-gradle-plugin") {
         withClassifiers("", "javadoc", "sources")
         // dependencies should be shadowed
-        withPomFileContentMatching { content -> !content.contains("<dependencies>") }
+        withPomFileContentMatching("Should have no <dependencies>") { content -> !content.contains("<dependencies>") }
         withPomFileMatchingMavenCentralRequirements()
         withJarContaining {
             // Test for shadowed files
