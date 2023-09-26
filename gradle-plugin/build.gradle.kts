@@ -6,7 +6,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     groovy
     `kotlin-dsl`
-    id("com.gradle.plugin-publish") version "1.2.1"
+    alias(libs.plugins.gradlePluginPublish)
     id("conventions.publishing")
     id("conventions.test-context")
 }
