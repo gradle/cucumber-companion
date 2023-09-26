@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.nexusPublish)
     `maven-publish`
