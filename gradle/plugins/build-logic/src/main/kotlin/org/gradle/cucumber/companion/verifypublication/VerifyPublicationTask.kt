@@ -7,6 +7,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.file.FileOperations
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import javax.inject.Inject
@@ -22,7 +23,7 @@ abstract class VerifyPublicationTask : DefaultTask() {
     @get:Input
     abstract val groupId: Property<String>
 
-    @get:Input
+    @get:Nested
     abstract val verifyPublicationExtension: Property<VerifyPublicationExtension>
 
     @TaskAction

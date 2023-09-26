@@ -2,18 +2,18 @@ package org.gradle.cucumber.companion.verifypublication
 
 import org.gradle.api.Action
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.Input
-import java.io.File
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Internal
 
 abstract class VerifyPublicationExtension {
     companion object {
         val NAME = "verifyPublication"
     }
 
+    @get:Internal
     val artifacts: MutableList<PublishedArtifactRule> = mutableListOf()
 
-    @get:Input
+    @get:InputDirectory
     abstract val verificationRepoDir: DirectoryProperty
 
     fun expectPublishedArtifact(name: String, action: Action<PublishedArtifactRule>) {
@@ -21,6 +21,4 @@ abstract class VerifyPublicationExtension {
         action.execute(pa)
         artifacts.add(pa)
     }
-
-
 }
