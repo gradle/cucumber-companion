@@ -3,7 +3,11 @@ https://central.sonatype.com/artifact/org.gradle.cucumber.companion/cucumber-com
 https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml[image:https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml/badge.svg?branch=main[GitHub Workflow Status]]
 
 = Cucumber Companion
-:version: 1.0.0
+// Keep in sync with gradle.properties
+:version: 1.0.0-rc-1
+// keep in sync with version catalog (libs.version.toml)
+:minGradleVersion: 7.3
+:minMavenVersion: 3.8.6
 
 == Why would you add the Cucumber Companion plugin to you build?
 
@@ -26,6 +30,8 @@ Also, the plugins don't replace anything from Cucumber, but act as companions to
 IMPORTANT: This document assumes that you have followed the basic instructions from https://cucumber.io/docs/installation/java/ and https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine to set up the necessary dependencies.
 
 === Gradle
+// keep in sync with version catalog (libs.version.toml)
+NOTE: The plugin requires _at least_ Gradle version {minGradleVersion}
 
 Add the plugin declaration to the plugins block in your `build.gradle(.kts)` file.
 
@@ -82,6 +88,8 @@ cucumberCompanion {
 ----
 
 === Maven
+
+NOTE: The plugin has been tested with Maven versions >= {minMavenVersion}
 
 Add this plugin declaration to your pom.xml.
 The goal is bound to the `generate-test-sources` lifecycle phase.
