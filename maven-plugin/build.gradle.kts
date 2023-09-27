@@ -14,6 +14,7 @@ plugins {
     id("conventions.maven-plugin-testing")
     id("conventions.publishing")
     id("conventions.test-context")
+    id("conventions.verify-publication")
 }
 
 project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -22,6 +23,25 @@ val mavenPluginArtifactId = "cucumber-companion-maven-plugin"
 mavenPlugin {
     artifactId.set(mavenPluginArtifactId)
     dependencies = configurations.named("shadow")
+}
+
+verifyPublication {
+    expectPublishedArtifact("cucumber-companion-maven-plugin") {
+        withClassifiers("", "javadoc", "sources")
+        // dependencies should be shadowed
+        withPomFileContentMatching("Should have no <dependencies>") { content -> !content.contains("<dependencies>") }
+        withPomFileMatchingMavenCentralRequirements()
+
+        withJarContaining {
+            aFile("META-INF/maven/plugin.xml")
+            aFile("META-INF/maven/org.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
+                matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
+            }
+            // Test for shadowed files
+            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("META-INF/LICENSE")
+        }
+    }
 }
 
 java {
@@ -79,6 +99,9 @@ project.afterEvaluate {
     val sourceSet = extensions.getByType(MavenPluginDevelopmentExtension::class).pluginSourceSet.get()
     tasks.named<ShadowJar>("shadowJar").configure {
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
+        from(file("../LICENSE")) {
+            into("META-INF")
+        }
     }
     sourceSet.java.srcDir(
         tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })

@@ -2,13 +2,13 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-
 plugins {
     groovy
     `kotlin-dsl`
     alias(libs.plugins.gradlePluginPublish)
     id("conventions.publishing")
     id("conventions.test-context")
+    id("conventions.verify-publication")
 }
 
 project.description = "Gradle Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
@@ -36,6 +36,9 @@ testContext {
 
 tasks.withType<ShadowJar>().configureEach {
     archiveClassifier = ""
+    from(file("../LICENSE")) {
+        into("META-INF")
+    }
 }
 
 java {
@@ -46,6 +49,23 @@ java {
 
 dependencies {
     implementation(projects.companionGenerator)
+}
+
+verifyPublication {
+    expectPublishedArtifact("cucumber-companion-gradle-plugin") {
+        withClassifiers("", "javadoc", "sources")
+        // dependencies should be shadowed
+        withPomFileContentMatching("Should have no <dependencies>") { content -> !content.contains("<dependencies>") }
+        withPomFileMatchingMavenCentralRequirements()
+        withJarContaining {
+            // Test for shadowed files
+            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("META-INF/LICENSE")
+        }
+    }
+    expectPublishedArtifact("org.gradle.cucumber.companion.gradle.plugin") {
+        withPomFileMatchingMavenCentralRequirements()
+    }
 }
 
 testing {
@@ -94,6 +114,9 @@ gradlePlugin {
     val cucumberCompanion by plugins.creating {
         id = "org.gradle.cucumber.companion"
         implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
+        displayName = "Cucumber Companion Plugin"
+        description = project.description
+        tags.addAll("cucumber", "test")
     }
 }
 

@@ -84,7 +84,7 @@ fun publish(
         steps {
             gradle {
                 useGradleWrapper = true
-                tasks = "clean $gradlePublishTaskName"
+                tasks = "clean verifyPublication $gradlePublishTaskName"
                 gradleParams = "--build-cache --no-configuration-cache"
             }
         }
