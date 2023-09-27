@@ -2,7 +2,6 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-
 plugins {
     groovy
     `kotlin-dsl`
@@ -88,7 +87,6 @@ tasks.register("allGradleCrossVersionTests") {
     group = "Cross Version"
     description = "Runs all ${allCrossVersionTests.size} gradle cross version test tasks"
 }
-
 gradlePlugin {
     // Define the plugin
     val cucumberCompanion by plugins.creating {
