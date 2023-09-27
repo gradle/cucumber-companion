@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version libs.versions.kotlin
     `kotlin-dsl`
+    `groovy`
 }
 
 repositories {
@@ -13,3 +14,20 @@ dependencies {
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
     implementation(libs.shadow)
 }
+
+testing {
+    suites {
+        val functionalTest by registering(JvmTestSuite::class) {
+            useSpock(libs.versions.spock)
+
+            dependencies {
+                implementation(project())
+                implementation(platform(libs.groovy.bom.get().toString()))
+                implementation(libs.groovy.nio)
+            }
+        }
+    }
+}
+gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
+
+

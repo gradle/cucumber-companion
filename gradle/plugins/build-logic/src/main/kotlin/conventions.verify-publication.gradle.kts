@@ -32,7 +32,8 @@ val verifyPublication by tasks.creating(VerifyPublicationTask::class.java) {
     description = "Verifies structure and contents of all published artifacts"
     dependsOn(clearTempRepo, publishToVerificationRepoTasks)
 
-    version = providers.gradleProperty("version")
-    groupId = providers.gradleProperty("group")
-    verifyPublicationExtension = provider { extension }
+    version = project.version.toString()
+    groupId = project.group.toString()
+    verificationRepoDir = extension.verificationRepoDir
+    artifacts = extension.artifacts
 }

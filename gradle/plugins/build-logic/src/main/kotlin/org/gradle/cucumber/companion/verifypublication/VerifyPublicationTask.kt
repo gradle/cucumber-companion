@@ -2,13 +2,13 @@ package org.gradle.cucumber.companion.verifypublication
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.file.FileOperations
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import java.io.File
 import javax.inject.Inject
 
@@ -23,23 +23,22 @@ abstract class VerifyPublicationTask : DefaultTask() {
     @get:Input
     abstract val groupId: Property<String>
 
-    @get:Nested
-    abstract val verifyPublicationExtension: Property<VerifyPublicationExtension>
+    @get:Internal
+    abstract val artifacts: ListProperty<PublishedArtifactRule>
+
+    @get:InputDirectory
+    abstract val verificationRepoDir: DirectoryProperty
 
     @TaskAction
     fun verify() {
-        verifyPublishedArtifacts(version.get(), groupId.get())
+        verifyPublishedArtifacts(verificationRepoDir.get(), version.get(), groupId.get(), artifacts.get())
     }
 
-    private fun verifyPublishedArtifacts(version: String, groupId: String) {
-        val extension = verifyPublicationExtension.get()
-        val publicationBasePath = extension.verificationRepoDir
-            .map { it.dir(groupId.replace(".", File.separator)) }
-            .get()
+    private fun verifyPublishedArtifacts(verificationRepoDir: Directory, version: String, groupId: String, artifacts: List<PublishedArtifactRule>) {
+        val publicationBasePath = verificationRepoDir.dir(groupId.replace(".", File.separator))
 
-        val artifacts = extension.artifacts
         val files = publicationBasePath.asFile.list()?.size
-        require(files == artifacts.size) { "Expected ${artifacts.size} published artifacts but was $files" }
+        require(files == artifacts.size) { "Expected ${artifacts.size} published artifacts but found $files" }
 
         artifacts.forEach { verifySingleArtifact(it, version, publicationBasePath) }
     }
