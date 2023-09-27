@@ -23,7 +23,7 @@ afterEvaluate {
 }
 
 val crossVersions = listOf(
-    CrossVersionTest("7.3", false), // lowest supported versions as jvm-test-suites was added here
+    CrossVersionTest(libs.versions.gradleMinSupported.get(), false), // lowest supported versions as jvm-test-suites was added here
     CrossVersionTest(GradleVersion.current().version, true),
 )
 
