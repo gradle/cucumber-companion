@@ -15,6 +15,7 @@ plugins {
     id("conventions.publishing")
     id("conventions.test-context")
     id("conventions.verify-publication")
+    id("conventions.code-style")
 }
 
 project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"

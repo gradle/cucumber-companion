@@ -5,6 +5,7 @@ plugins {
     groovy
     `jvm-test-suite`
     `java-test-fixtures`
+    id("conventions.code-style")
 }
 
 java {
