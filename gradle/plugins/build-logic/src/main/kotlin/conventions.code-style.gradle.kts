@@ -1,5 +1,7 @@
 import com.hierynomus.gradle.license.tasks.LicenseCheck
 import com.hierynomus.gradle.license.tasks.LicenseFormat
+import java.time.LocalDateTime
+import java.time.Year
 
 plugins {
     id("com.github.hierynomus.license")
@@ -19,6 +21,8 @@ license {
             "kt" to "SLASHSTAR_STYLE"
         )
     )
+
+    ext.set("year", Year.now().value)
     sourceSets = project.sourceSets
 }
 
