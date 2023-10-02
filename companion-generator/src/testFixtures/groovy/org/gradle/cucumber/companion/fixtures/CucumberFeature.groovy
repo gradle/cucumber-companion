@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.gradle.cucumber.companion.fixtures
 
 import groovy.transform.CompileStatic
@@ -7,7 +22,7 @@ import java.security.MessageDigest
 
 @CompileStatic
 enum CucumberFeature {
-    ProductSearch(
+    PRODUCT_SEARCH(
         ExpectedOutcome.SUCCESS,
         "Product Search",
         '',
@@ -47,7 +62,7 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    ShoppingCart(
+    SHOPPING_CART(
         ExpectedOutcome.SUCCESS,
         'Shopping Cart',
         '',
@@ -86,7 +101,7 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    UserRegistration(
+    USER_REGISTRATION(
         ExpectedOutcome.SUCCESS,
         'User Registration',
         'user',
@@ -127,7 +142,7 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    PasswordReset(
+    PASSWORD_RESET(
         ExpectedOutcome.SUCCESS,
         'Password Reset',
         'user',
@@ -171,7 +186,7 @@ enum CucumberFeature {
             }
         '''.stripIndent(true)
     ),
-    PasswordReset_V2(
+    PASSWORD_RESET_V2(
         ExpectedOutcome.SUCCESS,
         'Password Reset',
         'user',
@@ -223,7 +238,7 @@ enum CucumberFeature {
         true
     ),
 
-    UserProfile(
+    USER_PROFILE(
         ExpectedOutcome.SUCCESS,
         'User Profile',
         'user',
@@ -274,7 +289,7 @@ enum CucumberFeature {
         '''.stripIndent(true)
     ),
 
-    FailingFeature(
+    FAILING_FEATURE(
         ExpectedOutcome.FAILED,
         'Failing Feature',
         'failing',

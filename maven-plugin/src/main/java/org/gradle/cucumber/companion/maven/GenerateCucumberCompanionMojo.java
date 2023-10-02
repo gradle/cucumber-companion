@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.gradle.cucumber.companion.maven;
 
 import org.apache.maven.model.Resource;
@@ -31,7 +46,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project.build.directory}/generated-test-sources/cucumberCompanion", required = true)
     private String generatedSourcesDirectory;
-    private Path _generatedSourcesDirectory;
+    private Path generatedSourcesDirectoryInternal;
 
     @Parameter(defaultValue = "Test", required = true)
     private String generatedFileNameSuffix;
@@ -41,7 +56,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        _generatedSourcesDirectory = Paths.get(generatedSourcesDirectory);
+        generatedSourcesDirectoryInternal = Paths.get(generatedSourcesDirectory);
         getLog().info("Generating Cucumber companion files...");
         cleanOutputDirectory();
         ensureOutputDirectoryExists();
@@ -50,7 +65,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     }
 
     private void addGeneratedTestSourceDirectory() {
-        project.addTestCompileSourceRoot(_generatedSourcesDirectory.toAbsolutePath().toString());
+        project.addTestCompileSourceRoot(generatedSourcesDirectoryInternal.toAbsolutePath().toString());
     }
 
     private void createCompanionFiles() throws MojoExecutionException {
@@ -65,9 +80,9 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     }
 
     private void cleanOutputDirectory() throws MojoExecutionException {
-        if (Files.exists(_generatedSourcesDirectory)) {
+        if (Files.exists(generatedSourcesDirectoryInternal)) {
             try {
-                deleteRecursively(_generatedSourcesDirectory);
+                deleteRecursively(generatedSourcesDirectoryInternal);
             } catch (IOException e) {
                 throw new MojoExecutionException("Could not clean output directory", e);
             }
@@ -76,20 +91,20 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
 
     private void ensureOutputDirectoryExists() throws MojoExecutionException {
         try {
-            Files.createDirectories(_generatedSourcesDirectory);
+            Files.createDirectories(generatedSourcesDirectoryInternal);
         } catch (IOException e) {
             throw new MojoExecutionException("Could not create output directory", e);
         }
     }
 
-    private int createCompanionFiles(Path _testResourcesDirectory) throws MojoExecutionException {
-        if (!Files.exists(_testResourcesDirectory)) {
+    private int createCompanionFiles(Path testResourcesDirectory) throws MojoExecutionException {
+        if (!Files.exists(testResourcesDirectory)) {
             return 0;
         }
 
-        try (Stream<Path> stream = Files.walk(_testResourcesDirectory)) {
+        try (Stream<Path> stream = Files.walk(testResourcesDirectory)) {
             return stream.filter(p -> p.getFileName().toString().endsWith(".feature"))
-                .map(p -> new CompanionFile(_testResourcesDirectory, _generatedSourcesDirectory, p, generatedFileNameSuffix))
+                .map(p -> new CompanionFile(testResourcesDirectory, generatedSourcesDirectoryInternal, p, generatedFileNameSuffix))
                 .mapToInt(companionFile -> {
                     try {
                         logDebug(() -> "Creating " + companionFile);

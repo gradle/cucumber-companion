@@ -26,9 +26,10 @@ maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = 
 maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.9.0" }
 takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.1" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.0.1" }
-shadow = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
+shadowPlugin = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
 surefirePlugin = { module = "org.apache.maven.plugins:maven-surefire-plugin", version.ref = "surefire" }
 failsafePlugin = { module = "org.apache.maven.plugins:maven-failsafe-plugin", version.ref = "failsafe" }
+licensePlugin = { module = "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin", version = "0.16.1"}
 
 [plugins]
 mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }

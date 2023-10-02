@@ -12,7 +12,8 @@ dependencies {
     implementation(kotlin("gradle-plugin"))
     // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
-    implementation(libs.shadow)
+    implementation(libs.shadowPlugin)
+    implementation((libs.licensePlugin))
 }
 
 testing {
