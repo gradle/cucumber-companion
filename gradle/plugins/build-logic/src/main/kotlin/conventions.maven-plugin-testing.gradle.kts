@@ -15,7 +15,9 @@ plugins {
 // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
 val libs = the<LibrariesForLibs>()
 
-val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesting")
+val extension = extensions.create<MavenPluginTestingExtension>("mavenPluginTesting").apply {
+    mavenVersions.convention(setOf())
+}
 
 val m2Repository: Provider<Directory> = layout.buildDirectory.dir("m2")
 val takariResourceDir: Provider<Directory> = layout.buildDirectory.dir("takari-test")
@@ -65,11 +67,10 @@ val functionalTestTask = tasks.named<Test>("functionalTest") {
     jvmArgumentProviders += mavenDistribution
 }
 
-val allMavenCrossVersionTests = extension.mavenVersions
-    .map { mavenVersions ->
-        mavenVersions.map { mavenVersion ->
-            val mavenDistributions = project.the<MavenDistributionExtension>()
-
+afterEvaluate {
+    val mavenDistributions = project.the<MavenDistributionExtension>()
+    val allMavenCrossVersionTests = extension.mavenVersions.get()
+        .map { mavenVersion ->
             tasks.register<Test>("functionalTest_maven_${mavenVersion}") {
                 val templateTask = functionalTestTask.get()
                 classpath = templateTask.classpath
@@ -85,10 +86,10 @@ val allMavenCrossVersionTests = extension.mavenVersions
                 jvmArgumentProviders += mavenDistribution
             }
         }
-    }
 
-tasks.register("allMavenCrossVersionTests") {
-    dependsOn(allMavenCrossVersionTests)
-    group = "Cross Version"
-    description = "Runs all maven cross version test tasks"
+    tasks.register("allMavenCrossVersionTests") {
+        dependsOn(allMavenCrossVersionTests)
+        group = "Cross Version"
+        description = "Runs all maven cross version test tasks"
+    }
 }
