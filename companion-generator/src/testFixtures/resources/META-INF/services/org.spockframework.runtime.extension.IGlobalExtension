@@ -1,1 +1,1 @@
-org.gradle.cucumber.companion.testcontext.TestContextExtension
+com.gradle.cucumber.companion.testcontext.TestContextExtension

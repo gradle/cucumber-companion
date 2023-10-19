@@ -60,7 +60,7 @@ verifyPublication {
         withPomFileMatchingMavenCentralRequirements()
         withJarContaining {
             // Test for shadowed files
-            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("com/gradle/cucumber/companion/generator/CompanionGenerator.class")
             aFile("META-INF/LICENSE")
         }
     }
@@ -113,7 +113,7 @@ gradlePlugin {
     // Define the plugin
     val cucumberCompanion by plugins.creating {
         id = "com.gradle.cucumber.companion"
-        implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
+        implementationClass = "com.gradle.cucumber.companion.CucumberCompanionPlugin"
         displayName = "Cucumber Companion Plugin"
         description = project.description
         tags.addAll("cucumber", "test")

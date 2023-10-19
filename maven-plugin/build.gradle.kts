@@ -39,7 +39,7 @@ verifyPublication {
                 matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
             // Test for shadowed files
-            aFile("org/gradle/cucumber/companion/generator/CompanionGenerator.class")
+            aFile("com/gradle/cucumber/companion/generator/CompanionGenerator.class")
             aFile("META-INF/LICENSE")
         }
     }
