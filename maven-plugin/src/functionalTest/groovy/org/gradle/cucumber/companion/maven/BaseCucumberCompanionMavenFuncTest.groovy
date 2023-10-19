@@ -68,7 +68,7 @@ abstract class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
                 }
 
             }
-            addPlugin("org.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
+            addPlugin("com.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
                 executions {
                     execution {
                         goals {

@@ -35,7 +35,7 @@ verifyPublication {
 
         withJarContaining {
             aFile("META-INF/maven/plugin.xml")
-            aFile("META-INF/maven/org.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
+            aFile("META-INF/maven/com.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
                 matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
             // Test for shadowed files

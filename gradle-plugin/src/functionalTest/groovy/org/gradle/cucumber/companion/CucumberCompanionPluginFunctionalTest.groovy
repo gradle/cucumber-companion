@@ -271,7 +271,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             plugins {
                 id('java')
                 ${withJvmTestSuite ? "id('jvm-test-suite')" : ""}
-                id('org.gradle.cucumber.companion')
+                id('com.gradle.cucumber.companion')
             }
             repositories {
                 mavenCentral()
@@ -296,7 +296,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             plugins {
                 java
                 ${withJvmTestSuite ? 'id("jvm-test-suite")' : ""}
-                id("org.gradle.cucumber.companion")
+                id("com.gradle.cucumber.companion")
             }
             repositories {
                 mavenCentral()
@@ -321,7 +321,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             plugins {
                 id('java')
                 id('jvm-test-suite')
-                id('org.gradle.cucumber.companion')
+                id('com.gradle.cucumber.companion')
             }
             repositories {
                 mavenCentral()
@@ -361,7 +361,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             plugins {
                 java
                 `jvm-test-suite`
-                id("org.gradle.cucumber.companion")
+                id("com.gradle.cucumber.companion")
             }
 
             repositories {

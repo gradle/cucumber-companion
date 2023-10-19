@@ -82,7 +82,7 @@ class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumb
     }
 
     private void configureCompanionPluginForFailsafe() {
-        workspace.pom.replacePlugin("org.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
+        workspace.pom.replacePlugin("com.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
             executions {
                 execution {
                     goals {

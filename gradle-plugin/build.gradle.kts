@@ -64,7 +64,7 @@ verifyPublication {
             aFile("META-INF/LICENSE")
         }
     }
-    expectPublishedArtifact("org.gradle.cucumber.companion.gradle.plugin") {
+    expectPublishedArtifact("com.gradle.cucumber.companion.gradle.plugin") {
         withPomFileMatchingMavenCentralRequirements()
     }
 }
@@ -112,7 +112,7 @@ tasks.register("allGradleCrossVersionTests") {
 gradlePlugin {
     // Define the plugin
     val cucumberCompanion by plugins.creating {
-        id = "org.gradle.cucumber.companion"
+        id = "com.gradle.cucumber.companion"
         implementationClass = "org.gradle.cucumber.companion.CucumberCompanionPlugin"
         displayName = "Cucumber Companion Plugin"
         description = project.description

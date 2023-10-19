@@ -1,5 +1,5 @@
 https://github.com/gradle/cucumber-companion/blob/main/LICENSE[image:image:https://img.shields.io/github/license/gradle/cucumber-companion[License]]
-https://central.sonatype.com/artifact/org.gradle.cucumber.companion/cucumber-companion[image:https://img.shields.io/maven-central/v/org.gradle.cucumber.companion/cucumber-companion.svg?label=Maven%20Central[Maven Central]]
+https://central.sonatype.com/artifact/com.gradle.cucumber.companion/cucumber-companion[image:https://img.shields.io/maven-central/v/com.gradle.cucumber.companion/cucumber-companion.svg?label=Maven%20Central[Maven Central]]
 https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml[image:https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml/badge.svg?branch=main[GitHub Workflow Status]]
 
 = Cucumber Companion
@@ -38,7 +38,7 @@ Add the plugin declaration to the plugins block in your `build.gradle(.kts)` fil
 [source,kotlin,subs="attributes+"]
 ----
 plugins {
-    id("org.gradle.cucumber.companion") version "{version}"
+    id("com.gradle.cucumber.companion") version "{version}"
 }
 ----
 
@@ -99,7 +99,7 @@ The goal is bound to the `generate-test-sources` lifecycle phase.
 <build>
     <plugins>
         <plugin>
-            <groupId>org.gradle.cucumber.companion</groupId>
+            <groupId>com.gradle.cucumber.companion</groupId>
             <artifactId>cucumber-companion-maven-plugin</artifactId>
             <version>{version}</version>
             <executions>
@@ -122,7 +122,7 @@ If you prefer to run your tests with failsafe instead, then you can configure th
 <build>
     <plugins>
         <plugin>
-            <groupId>org.gradle.cucumber.companion</groupId>
+            <groupId>com.gradle.cucumber.companion</groupId>
             <artifactId>cucumber-companion-maven-plugin</artifactId>
             <version>{version}</version>
             <executions>
