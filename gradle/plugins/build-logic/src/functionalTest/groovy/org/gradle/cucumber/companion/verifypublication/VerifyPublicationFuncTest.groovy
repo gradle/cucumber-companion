@@ -1,4 +1,4 @@
-package org.gradle.cucumber.companion.verifypublication
+package com.gradle.cucumber.companion.verifypublication
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner

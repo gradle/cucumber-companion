@@ -1,9 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.cucumber.companion.plugintesting.MavenDistributionExtension
-import org.gradle.cucumber.companion.plugintesting.MavenPluginTestingExtension
-import org.gradle.cucumber.companion.plugintesting.TakariTestPropertiesTask
+import com.gradle.cucumber.companion.plugintesting.MavenDistributionExtension
+import com.gradle.cucumber.companion.plugintesting.MavenPluginTestingExtension
+import com.gradle.cucumber.companion.plugintesting.TakariTestPropertiesTask
 
 plugins {
     id("java")

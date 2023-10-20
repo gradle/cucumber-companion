@@ -1,5 +1,5 @@
-import org.gradle.cucumber.companion.verifypublication.VerifyPublicationExtension
-import org.gradle.cucumber.companion.verifypublication.VerifyPublicationTask
+import com.gradle.cucumber.companion.verifypublication.VerifyPublicationExtension
+import com.gradle.cucumber.companion.verifypublication.VerifyPublicationTask
 
 plugins {
     `maven-publish`

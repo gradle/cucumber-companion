@@ -1,6 +1,6 @@
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
-import org.gradle.cucumber.companion.plugintesting.MavenDistribution
-import org.gradle.cucumber.companion.plugintesting.MavenDistributionExtension
+import com.gradle.cucumber.companion.plugintesting.MavenDistribution
+import com.gradle.cucumber.companion.plugintesting.MavenDistributionExtension
 
 extensions.create<MavenDistributionExtension>("mavenDistributions").apply {
     downloadAndExtractMavenDistro(versions)
