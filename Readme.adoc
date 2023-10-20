@@ -4,7 +4,7 @@ https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml[image:
 
 = Cucumber Companion
 // Keep in sync with gradle.properties
-:version: 1.0.0-rc-2
+:version: 1.0.0-rc-3
 // keep in sync with version catalog (libs.version.toml)
 :minGradleVersion: 7.3
 :minMavenVersion: 3.8.6
