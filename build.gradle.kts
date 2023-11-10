@@ -4,7 +4,7 @@ plugins {
 }
 
 nexusPublishing {
-    packageGroup.set("org.gradle")
+    packageGroup.set("com.gradle")
     this.repositories {
         sonatype {
             // https://central.sonatype.org/news/20210223_new-users-on-s01/
