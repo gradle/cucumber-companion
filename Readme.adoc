@@ -1,5 +1,5 @@
 https://github.com/gradle/cucumber-companion/blob/main/LICENSE[image:image:https://img.shields.io/github/license/gradle/cucumber-companion[License]]
-https://central.sonatype.com/artifact/com.gradle.cucumber.companion/cucumber-companion-maven-plugin[image:https://img.shields.io/maven-central/v/com.gradle.cucumber.companion/cucumber-companion.svg?label=Maven%20Central[Maven Central]]
+https://central.sonatype.com/artifact/com.gradle.cucumber.companion/cucumber-companion-maven-plugin[image:https://img.shields.io/maven-central/v/com.gradle.cucumber.companion/cucumber-companion-maven-plugin.svg?label=Maven%20Central[Maven Central]]
 https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml[image:https://github.com/gradle/cucumber-companion/actions/workflows/verify.yml/badge.svg?branch=main[GitHub Workflow Status]]
 
 = Cucumber Companion
