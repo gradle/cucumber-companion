@@ -46,7 +46,7 @@ public class CompanionGenerator {
             bw.write("@org.junit.platform.suite.api.Suite");
             bw.newLine();
             bw.write("@org.junit.platform.suite.api.SelectClasspathResource(\"");
-            bw.write(companionFile.getClassPathResource());
+            bw.write(companionFile.getClassPathResource().replace('\\', '/'));
             bw.write("\")");
             bw.newLine();
             bw.write("class ");
