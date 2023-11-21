@@ -24,3 +24,12 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
       with:
         arguments: "allMavenCrossVersionTests allGradleCrossVersionTests  --no-configuration-cache"
+
+    - name: Store reports
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: reports
+        path: |
+          **/build/reports/
+          **/build/test-results/
