@@ -8,7 +8,11 @@ on:
 
 jobs:
   cross-version-tests:
-    runs-on: 'ubuntu-latest'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest' ]
     steps:
     - uses: actions/checkout@v3
     - name: "Setup Build Environment"
@@ -20,3 +24,12 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
       with:
         arguments: "allMavenCrossVersionTests allGradleCrossVersionTests  --no-configuration-cache"
+
+    - name: Store reports
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cross-version-reports-${{ matrix.os }}
+        path: |
+          **/build/reports/
+          **/build/test-results/

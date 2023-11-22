@@ -8,7 +8,11 @@ on:
 
 jobs:
   build-and-verify:
-    runs-on: 'ubuntu-latest'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest' ]
     steps:
     - uses: actions/checkout@v3
     - name: "Setup Build Environment"
@@ -20,3 +24,12 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
       with:
         arguments: "check --no-configuration-cache"
+
+    - name: Store reports
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: check-reports-${{ matrix.os }}
+        path: |
+          **/build/reports/
+          **/build/test-results/
