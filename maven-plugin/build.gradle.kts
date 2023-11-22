@@ -18,7 +18,7 @@ plugins {
     id("conventions.code-style")
 }
 
-project.description = "Maven Plugin making Cucumber tests compatible with Gradle Enterprise test acceleration features"
+project.description = "Maven Plugin making Cucumber tests compatible with Develocity's test acceleration features"
 val mavenPluginArtifactId = "cucumber-companion-maven-plugin"
 
 mavenPlugin {
