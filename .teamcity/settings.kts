@@ -45,11 +45,13 @@ project {
 
     buildType(publish(
         "Publish to Maven Central",
-        "Publishes the Cucumber Companion Plugins to Maven Central",
-        "publishToSonatype"
+        "Publishes the Cucumber Companion Plugins to Maven Central and Gradle Plugin Portal",
+        "publishToSonatype publishPlugins %pluginPortalPublishingFlags%"
     ) {
         it.param("env.ORG_GRADLE_PROJECT_sonatypeUsername", "%mavenCentralStagingRepoUser%")
         it.password("env.ORG_GRADLE_PROJECT_sonatypePassword", "%mavenCentralStagingRepoPassword%")
+        it.param("env.ORG_GRADLE_PROJECT_gradle.publish.key", "%plugin.portal.publish.key%")
+        it.password("env.ORG_GRADLE_PROJECT_gradle.publish.secret", "%plugin.portal.publish.secret%")
     })
 
     params {

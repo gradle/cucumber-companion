@@ -110,7 +110,8 @@ tasks.register("allGradleCrossVersionTests") {
     description = "Runs all ${allCrossVersionTests.size} gradle cross version test tasks"
 }
 gradlePlugin {
-    // Define the plugin
+    website = "https://github.com/gradle/cucumber-companion/"
+    vcsUrl = "https://github.com/gradle/cucumber-companion/"
     val cucumberCompanion by plugins.creating {
         id = "com.gradle.cucumber.companion"
         implementationClass = "com.gradle.cucumber.companion.CucumberCompanionPlugin"
