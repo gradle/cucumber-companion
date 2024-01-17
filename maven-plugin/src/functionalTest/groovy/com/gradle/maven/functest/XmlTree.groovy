@@ -91,7 +91,7 @@ class XmlTree {
                 QName qName = node.name() as QName
                 qName.localPart == name
             }
-        }
+        } as Node
         n ?: parent.appendNode(name)
     }
 
