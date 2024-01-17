@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.serviceOf
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -18,9 +20,8 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-
 val isCI = System.getenv("CI")?.toBoolean() ?: false
-val isCC = gradle.startParameter.isConfigurationCacheRequested
+val isCC = gradle.serviceOf<BuildFeatures>().configurationCache.active.getOrElse(false)
 
 require(!isCC || !isCI) { "Configuration-Cache should be disabled on CI" }
 
@@ -28,5 +29,3 @@ rootProject.name = "cucumber-companion"
 include("gradle-plugin")
 include("maven-plugin")
 include("companion-generator")
-
-
