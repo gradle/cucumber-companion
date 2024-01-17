@@ -53,8 +53,5 @@ fun generateCucumberSuiteCompanion(
         this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
         this.outputDirectory.set(outputDir)
     }
-    sourceSet.java.srcDir(outputDir)
-    taskContainer.named(sourceSet.compileJavaTaskName) {
-        this.dependsOn(companionTask.name)
-    }
+    sourceSet.java.srcDir(companionTask)
 }
