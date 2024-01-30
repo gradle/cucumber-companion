@@ -19,7 +19,7 @@ jobs:
       uses: ./.github/actions/setup-environment
 
     - name: 'Build Cucumber-Companion'
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/gradle-build-action@v3
       env:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
       with:
