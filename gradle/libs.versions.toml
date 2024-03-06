@@ -32,6 +32,6 @@ failsafePlugin = { module = "org.apache.maven.plugins:maven-failsafe-plugin", ve
 licensePlugin = { module = "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin", version = "0.16.1"}
 
 [plugins]
-mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.2" }
+mavenPluginDevelopment = { id = "de.benediktritter.maven-plugin-development", version = "0.4.3" }
 nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.3.0" }
 gradlePluginPublish = { id = "com.gradle.plugin-publish", version = "1.2.1" }
