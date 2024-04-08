@@ -23,7 +23,7 @@ spock-bom = { module = "org.spockframework:spock-bom", version.ref = "spock" }
 spock-core.module = "org.spockframework:spock-core"
 maven-core = { module = "org.apache.maven:maven-core", version.ref = "mavenMaxCompatible" }
 maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "mavenMaxCompatible" }
-maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.11.0" }
+maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.12.0" }
 takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.2" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.1.0" }
 shadowPlugin = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
