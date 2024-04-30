@@ -21,26 +21,32 @@ import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
 
-fun generateCucumberSuiteCompanion(suite: JvmTestSuite, project: Project) {
+fun generateCucumberSuiteCompanion(
+    suite: JvmTestSuite,
+    project: Project,
+    allowEmptySuites: Boolean = false
+) {
     val taskContainer = project.tasks
     val buildDirectory = project.layout.buildDirectory
-    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory)
+    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory, allowEmptySuites)
 }
 
 fun generateCucumberSuiteCompanion(
     suite: JvmTestSuite,
     taskContainer: TaskContainer,
-    buildDirectory: DirectoryProperty
+    buildDirectory: DirectoryProperty,
+    allowEmptySuites: Boolean = false
 ) {
     val sourceSet = suite.sources
-    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name)
+    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name, allowEmptySuites)
 }
 
 fun generateCucumberSuiteCompanion(
     taskContainer: TaskContainer,
     buildDirectory: DirectoryProperty,
     sourceSet: SourceSet,
-    name: String
+    name: String,
+    allowEmptySuites: Boolean = false
 ) {
     val companionTask = taskContainer.register(
         "${name}GenerateCucumberSuiteCompanion",
@@ -52,6 +58,7 @@ fun generateCucumberSuiteCompanion(
         // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
         this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
         this.outputDirectory.set(outputDir)
+        this.allowEmptySuites.set(allowEmptySuites)
     }
     sourceSet.java.srcDir(companionTask)
 }

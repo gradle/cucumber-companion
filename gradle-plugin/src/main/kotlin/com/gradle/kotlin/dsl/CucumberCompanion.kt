@@ -21,6 +21,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.jvm.JvmTestSuite
 import com.gradle.cucumber.companion.generateCucumberSuiteCompanion
 
-fun JvmTestSuite.generateCucumberSuiteCompanion(project: Project) {
-    generateCucumberSuiteCompanion(this, project)
+fun JvmTestSuite.generateCucumberSuiteCompanion(project: Project, allowEmptySuites: Boolean = false) {
+    generateCucumberSuiteCompanion(this, project, allowEmptySuites)
 }

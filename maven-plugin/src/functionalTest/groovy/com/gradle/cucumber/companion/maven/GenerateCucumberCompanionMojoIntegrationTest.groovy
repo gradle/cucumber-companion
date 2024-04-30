@@ -15,8 +15,8 @@
  */
 package com.gradle.cucumber.companion.maven
 
-import groovy.xml.XmlSlurper
 import com.gradle.cucumber.companion.fixtures.CucumberFeature
+import groovy.xml.XmlSlurper
 
 import java.nio.file.Files
 
@@ -71,12 +71,47 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("Test", succeedingFeatures)
+        def expectedCompanions = expectedCompanionFiles("Test", false, succeedingFeatures)
         expectedCompanions.forEach {
             verifyAll(sureFireTestReport(it)) {
                 Files.exists(it)
                 def testsuite = new XmlSlurper().parse(it)
                 testsuite.testcase.size() == 1
+            }
+        }
+    }
+
+    def "generate-cucumber-companion-files mojo generates valid companion file allowing for empty suites"() {
+        given:
+        def allSucceedingFeatures = CucumberFeature.allSucceeding()
+        def discoveredSucceedingFeatures = [CucumberFeature.USER_PROFILE]
+        createProject()
+        configureCompanionPluginToAllowEmptySuites()
+        createFeatureFiles(workspace.fileSystem)
+        createStepFiles(workspace.fileSystem)
+        createPostDiscoveryFilter(workspace.fileSystem)
+        registerPostDiscoveryFilter(workspace.fileSystem)
+
+        when:
+        def result = maven.execute(workspace, "test")
+
+        then:
+        noExceptionThrown()
+        result.assertErrorFreeLog()
+        result.log.each { println(it) }
+
+        and:
+        def expectedCompanions = expectedCompanionFiles("Test", true, allSucceedingFeatures)
+
+        expectedCompanions.forEach {
+            companionAssertions.assertCompanionFile(it)
+            def expectedTestRuns = discoveredSucceedingFeatures
+                .collect { f -> f.featureName }
+                .contains(it.featureName) ? 1 : 0
+            verifyAll(sureFireTestReport(it)) {
+                Files.exists(it)
+                def testsuite = new XmlSlurper().parse(it)
+                testsuite.testcase.size() == expectedTestRuns
             }
         }
     }
@@ -99,5 +134,18 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         log.find("Failing Feature.A feature which does not succeed when executed -- Time elapsed: .+ <<< FAILURE!") != null
     }
 
-
+    private void configureCompanionPluginToAllowEmptySuites() {
+        workspace.pom.replacePlugin("com.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
+            executions {
+                execution {
+                    goals {
+                        goal("generate-cucumber-companion-files")
+                    }
+                    configuration {
+                        allowEmptySuites("true")
+                    }
+                }
+            }
+        }
+    }
 }

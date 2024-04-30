@@ -19,6 +19,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.*
 import com.gradle.cucumber.companion.generator.CompanionGenerator
+import org.gradle.api.provider.Property
 import org.gradle.work.ChangeType
 import org.gradle.work.InputChanges
 import java.nio.file.Files
@@ -32,6 +33,9 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
+    @get:Internal
+    abstract val allowEmptySuites: Property<Boolean>
+
     @TaskAction
     fun generateSuiteCompanionClasses(inputChanges: InputChanges) {
         val outputDir = outputDirectory.get().asFile.toPath()
@@ -40,10 +44,10 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
             .forEach { change ->
                 val companionFile = CompanionGenerator.resolve(inputDir, outputDir, change.file.toPath())
                 when (change.changeType) {
-                    ChangeType.ADDED -> CompanionGenerator.create(companionFile)
+                    ChangeType.ADDED -> CompanionGenerator.create(companionFile, allowEmptySuites.get())
                     ChangeType.MODIFIED -> {
                         Files.deleteIfExists(companionFile.destination)
-                        CompanionGenerator.create(companionFile)
+                        CompanionGenerator.create(companionFile, allowEmptySuites.get())
                     }
                     ChangeType.REMOVED -> Files.deleteIfExists(companionFile.destination)
                     else -> {}

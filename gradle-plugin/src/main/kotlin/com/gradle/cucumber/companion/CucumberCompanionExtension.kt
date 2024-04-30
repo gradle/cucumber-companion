@@ -37,11 +37,15 @@ abstract class CucumberCompanionExtension @Inject constructor(
     @get:Input
     abstract val enableForStandardTestTask: Property<Boolean>
 
+    @get:Input
+    abstract val allowEmptySuites: Property<Boolean>
+
     init {
         enableForStandardTestTask.convention(true)
+        allowEmptySuites.convention(false)
     }
 
     fun generateCucumberSuiteCompanion(suite: JvmTestSuite) {
-        generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory)
+        generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory, allowEmptySuites.get())
     }
 }

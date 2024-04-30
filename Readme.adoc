@@ -73,6 +73,9 @@ testing {
 The added companion task has the pattern of `<suiteName>GenerateCucumberSuiteCompanion`, so for a suite named `functionalTest` it would be `functionalTestGenerateCucumberSuiteCompanion`.
 However, there's usually no need to call it manually since the `compile<suiteName>Java` task depends on it.
 
+To add `failIfNoTests = false` to the generated `@Suite` annotation in companions, just add second parameter `true`
+to the invocation.
+
 ==== Disabling generation for the default `test` task/suite
 
 If you need to disable the generation of companion files for the default `test` task/suite, then you can do so via the `cucumberCompanion` extension.
@@ -92,6 +95,31 @@ cucumberCompanion {
     enableForStandardTestTask = false
 }
 ----
+
+==== Generation of companions not failing if there are no tests
+
+This is interesting especially for test cases retries when all but few tests being filtered out.
+It adds `failIfNoTests = false` to the generated `@Suite` annotation.
+By default, companions execution will fail if all tests of a suite have been filtered out
+in the JUnit5 `discovery` phase.
+See also https://github.com/gradle/test-retry-gradle-plugin[Test Retry Gradle Plugin].
+
+`build.gradle.kts` (Kotlin)
+[source,kotlin]
+----
+cucumberCompanion {
+    allowEmptySuites.set(true)
+}
+----
+
+`build.gradle` (Groovy)
+[source,groovy]
+----
+cucumberCompanion {
+    allowEmptySuites = true
+}
+----
+
 
 === Maven
 
@@ -138,6 +166,36 @@ If you prefer to run your tests with Failsafe instead, then you can configure th
                     </goals>
                     <configuration>
                         <generatedFileNameSuffix>IT</generatedFileNameSuffix>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
+
+==== Generation of companions not failing if there are no tests
+
+This is interesting especially for test cases retries when all but few tests being filtered out.
+It adds `failIfNoTests = false` to the generated `@Suite` annotation.
+By default, companions execution will fail if all tests of a suite have been filtered out
+in the JUnit5 `discovery` phase.
+
+[source,xml,subs="attributes+"]
+----
+<build>
+    <plugins>
+        <plugin>
+            <groupId>com.gradle.cucumber.companion</groupId>
+            <artifactId>cucumber-companion-maven-plugin</artifactId>
+            <version>{version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>generate-cucumber-companion-files</goal>
+                    </goals>
+                    <configuration>
+                        <allowEmptySuites>true</allowEmptySuites>
                     </configuration>
                 </execution>
             </executions>

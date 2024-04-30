@@ -89,7 +89,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then:
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        def expectedCompanions = expectedCompanionFiles()
+        def expectedCompanions = expectedCompanionFiles("", variant == Variant.IMPLICIT_RELAXED)
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -121,6 +121,40 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
         where:
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
+    }
+
+    def "generated companion files are picked up by Gradle's test task and only discovered tests succeed"() {
+        given:
+        def allSucceedingFeatures = CucumberFeature.allSucceeding()
+        def discoveredSucceedingFeatures = [CucumberFeature.USER_PROFILE]
+        setupPlugin(buildScriptLanguage, variant)
+        createFeatureFiles(workspace, allSucceedingFeatures)
+        createStepFiles(workspace, allSucceedingFeatures)
+        createPostDiscoveryFilter(workspace)
+        registerPostDiscoveryFilter(workspace)
+
+        when:
+        def result = run("test")
+
+        then:
+        discoveredSucceedingFeatures
+            .collect { it.toExpectedTestTaskOutput("PASSED") }
+            .every {
+                result.output.contains(it)
+            }
+
+        and:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+
+        and:
+        allSucceedingFeatures.findAll { !discoveredSucceedingFeatures.contains(it) }
+            .collect { it.toExpectedTestTaskOutput("PASSED") }
+            .every {
+                !result.output.contains(it)
+            }
+
+        where:
+        [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), [Variant.IMPLICIT_RELAXED]].combinations()
     }
 
     def "can run failing cucumber test"() {
@@ -157,7 +191,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "feature companion is present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles('', false, [CucumberFeature.PRODUCT_SEARCH]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -170,7 +204,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
+        expectedCompanionFiles('', false, [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -183,7 +217,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles('', false, [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -196,12 +230,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "one companion remains"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles('', [CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles('', false, [CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
         and: "the other is gone"
-        expectedCompanionFiles('', [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles('', false, [CucumberFeature.PRODUCT_SEARCH]).forEach {
             with(companionFile(it)) {
                 !Files.exists(it)
             }
@@ -225,6 +259,9 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                     case Variant.IMPLICIT_WITH_TEST_SUITES:
                         setupPluginGroovy(true)
                         break
+                    case Variant.IMPLICIT_RELAXED:
+                        setupPluginGroovy(true, true)
+                        break
                     case Variant.EXPLICIT:
                         setupPluginExplicitGroovy()
                         break
@@ -237,6 +274,9 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                         break
                     case Variant.IMPLICIT_WITH_TEST_SUITES:
                         setupPluginKotlin(true)
+                        break
+                    case Variant.IMPLICIT_RELAXED:
+                        setupPluginKotlin(true, true)
                         break
                     case Variant.EXPLICIT:
                         setupPluginExplicitKotlin()
@@ -255,6 +295,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     enum Variant {
         IMPLICIT,
         IMPLICIT_WITH_TEST_SUITES,
+        IMPLICIT_RELAXED,
         EXPLICIT;
 
         @Override
@@ -263,7 +304,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         }
     }
 
-    private void setupPluginGroovy(boolean withJvmTestSuite = true) {
+    private void setupPluginGroovy(boolean withJvmTestSuite = true, boolean allowEmptySuites = false) {
         buildFile = workspace.file("build.gradle")
         settingsFile = workspace.file("settings.gradle")
         settingsFile.text = ""
@@ -276,6 +317,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             repositories {
                 mavenCentral()
             }
+            ${allowEmptySuites ? """
+            cucumberCompanion {
+                allowEmptySuites = $allowEmptySuites
+            }
+            """.stripIndent(true) : ""}
             dependencies {
             ${dependenciesRequiredForExecution()}
             }
@@ -288,7 +334,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    private void setupPluginKotlin(boolean withJvmTestSuite = true) {
+    private void setupPluginKotlin(boolean withJvmTestSuite = true, boolean allowEmptySuites = false) {
         buildFile = workspace.file("build.gradle.kts")
         settingsFile = workspace.file("settings.gradle.kts")
         settingsFile.text = ""
@@ -301,13 +347,18 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             repositories {
                 mavenCentral()
             }
+            ${allowEmptySuites ? """
+            cucumberCompanion {
+                allowEmptySuites.set($allowEmptySuites)
+            }
+            """.stripIndent(true) : ""}
             dependencies {
             ${dependenciesRequiredForExecution()}
             }
             tasks.withType<Test>().configureEach {
                 useJUnitPlatform()
                 testLogging {
-                    events("standardOut", "passed", "failed")
+                    events("standardError", "skipped",  "standardOut", "passed", "failed")
                 }
             }
             """.stripIndent(true)
@@ -401,6 +452,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         testImplementation("io.cucumber:cucumber-junit-platform-engine:$CUCUMBER_VERSION")
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("org.junit.platform:junit-platform-suite")
+        testImplementation("org.junit.platform:junit-platform-launcher")
         """.stripIndent(true)
     }
 }
