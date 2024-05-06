@@ -17,10 +17,13 @@
 
 package org.gradle.kotlin.dsl
 
+import com.gradle.cucumber.companion.GenerateCucumberSuiteCompanionTask
+import com.gradle.cucumber.companion.NoOpAction
+import com.gradle.cucumber.companion.generateCucumberSuiteCompanion
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.jvm.JvmTestSuite
-import com.gradle.cucumber.companion.generateCucumberSuiteCompanion
 
-fun JvmTestSuite.generateCucumberSuiteCompanion(project: Project, allowEmptySuites: Boolean = false) {
-    generateCucumberSuiteCompanion(this, project, allowEmptySuites)
-}
+fun JvmTestSuite.generateCucumberSuiteCompanion(
+    project: Project, configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
+) = generateCucumberSuiteCompanion(this, project, configureTask)

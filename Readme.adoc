@@ -73,9 +73,6 @@ testing {
 The added companion task has the pattern of `<suiteName>GenerateCucumberSuiteCompanion`, so for a suite named `functionalTest` it would be `functionalTestGenerateCucumberSuiteCompanion`.
 However, there's usually no need to call it manually since the `compile<suiteName>Java` task depends on it.
 
-To add `failIfNoTests = false` to the generated `@Suite` annotation in companions, just add second parameter `true`
-to the invocation.
-
 ==== Disabling generation for the default `test` task/suite
 
 If you need to disable the generation of companion files for the default `test` task/suite, then you can do so via the `cucumberCompanion` extension.
@@ -120,6 +117,37 @@ cucumberCompanion {
 }
 ----
 
+For the same outcome at the test suite level, define:
+
+`build.gradle.kts` (Kotlin)
+[source,kotlin]
+----
+testing {
+    suites {
+        functionalTest {
+            generateCucumberSuiteCompanion(project) {
+                allowEmptySuites.set(true)
+            }
+        }
+    }
+}
+----
+
+`build.gradle` (Groovy)
+[source,groovy]
+----
+testing {
+    suites {
+        functionalTest {
+            cucumberCompanion.generateCucumberSuiteCompanion(delegate) {
+                allowEmptySuites = true
+            }
+        }
+    }
+}
+----
+
+_Note that_ the configuration of a test suite will have higher priority than plugin-level configuration.
 
 === Maven
 

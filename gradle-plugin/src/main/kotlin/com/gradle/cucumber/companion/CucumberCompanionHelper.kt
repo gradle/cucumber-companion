@@ -15,30 +15,37 @@
  */
 package com.gradle.cucumber.companion
 
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
+import java.io.Serializable
+
+internal object NoOpAction : Action<GenerateCucumberSuiteCompanionTask>, Serializable {
+    override fun execute(task: GenerateCucumberSuiteCompanionTask) {
+    }
+}
 
 fun generateCucumberSuiteCompanion(
     suite: JvmTestSuite,
     project: Project,
-    allowEmptySuites: Boolean = false
+    configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val taskContainer = project.tasks
     val buildDirectory = project.layout.buildDirectory
-    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory, allowEmptySuites)
+    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory, configureTask)
 }
 
 fun generateCucumberSuiteCompanion(
     suite: JvmTestSuite,
     taskContainer: TaskContainer,
     buildDirectory: DirectoryProperty,
-    allowEmptySuites: Boolean = false
+    configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val sourceSet = suite.sources
-    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name, allowEmptySuites)
+    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name, configureTask)
 }
 
 fun generateCucumberSuiteCompanion(
@@ -46,7 +53,7 @@ fun generateCucumberSuiteCompanion(
     buildDirectory: DirectoryProperty,
     sourceSet: SourceSet,
     name: String,
-    allowEmptySuites: Boolean = false
+    configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val companionTask = taskContainer.register(
         "${name}GenerateCucumberSuiteCompanion",
@@ -58,7 +65,7 @@ fun generateCucumberSuiteCompanion(
         // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
         this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
         this.outputDirectory.set(outputDir)
-        this.allowEmptySuites.set(allowEmptySuites)
+        configureTask.execute(this)
     }
     sourceSet.java.srcDir(companionTask)
 }

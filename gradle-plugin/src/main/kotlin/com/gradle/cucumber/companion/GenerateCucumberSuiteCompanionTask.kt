@@ -33,8 +33,12 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
-    @get:Internal
+    @get:Input
     abstract val allowEmptySuites: Property<Boolean>
+
+    init {
+        allowEmptySuites.convention(false)
+    }
 
     @TaskAction
     fun generateSuiteCompanionClasses(inputChanges: InputChanges) {

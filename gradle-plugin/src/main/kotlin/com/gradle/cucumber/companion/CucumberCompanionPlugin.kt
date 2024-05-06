@@ -36,15 +36,18 @@ class CucumberCompanionPlugin : Plugin<Project> {
                     project.extensions.findByType(TestingExtension::class.java)?.suites?.withType(JvmTestSuite::class.java)
                         ?.findByName(name)
                 if (testSuite != null) {
-                    generateCucumberSuiteCompanion(testSuite, project, extension.allowEmptySuites.get())
+                    generateCucumberSuiteCompanion(testSuite, project) {
+                        allowEmptySuites.set(extension.allowEmptySuites.get())
+                    }
                 } else {
                     generateCucumberSuiteCompanion(
                         project.tasks,
                         project.layout.buildDirectory,
                         project.extensions.getByType(JavaPluginExtension::class.java).sourceSets.named(name).get(),
-                        name,
-                        extension.allowEmptySuites.get()
-                    )
+                        name
+                    ) {
+                        allowEmptySuites.set(extension.allowEmptySuites.get())
+                    }
                 }
             }
         }
