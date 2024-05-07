@@ -24,13 +24,13 @@ import spock.util.io.FileSystemFixture
 class CucumberFixture {
 
     @Memoized
-    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', boolean allowEmptySuites = false, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    List<ExpectedCompanionFile> expectedCompanionFiles(Map options = [suffix: '', allowEmptySuites: false], List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         features.collect {
-            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, suffix, allowEmptySuites)
+            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, (options.suffix ?: '') as String, (options.allowEmptySuites ?: false) as boolean)
         }
     }
 
-    void createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    def createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/resources") {
                 features.each {
@@ -40,7 +40,7 @@ class CucumberFixture {
         }
     }
 
-    void createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    def createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/java") {
                 features.each {
@@ -50,7 +50,7 @@ class CucumberFixture {
         }
     }
 
-    void createPostDiscoveryFilter(FileSystemFixture projectDir) {
+    def createPostDiscoveryFilter(FileSystemFixture projectDir, String filteredClassName) {
         projectDir.create {
             dir("src/test/java/org/junit/platform/launcher") {
                 file("TestPostDiscoveryFilter.java").text = """
@@ -63,8 +63,6 @@ class CucumberFixture {
                     
                     // allows only one, pre-defined class name in the discovery phase
                     public class TestPostDiscoveryFilter implements PostDiscoveryFilter {
-                    
-                        private static final String FILTERED_CLASS_NAME = "user.User_Profile";
                     
                         public FilterResult apply(TestDescriptor testDescriptor) {
                             if(testDescriptor.getSource().isPresent()) {
@@ -81,7 +79,7 @@ class CucumberFixture {
                                         .replace(".feature", "")
                                         .replaceAll("[^a-zA-Z0-9_\\\\.]", "_");
                                 }
-                                return FilterResult.includedIf(FILTERED_CLASS_NAME.equalsIgnoreCase(className));
+                                return FilterResult.includedIf("${filteredClassName}".equalsIgnoreCase(className));
                             }
                             return FilterResult.excluded("Suite/Feature name doesn't match");
                         }
@@ -91,7 +89,7 @@ class CucumberFixture {
         }
     }
 
-    void registerPostDiscoveryFilter(FileSystemFixture projectDir) {
+    def registerPostDiscoveryFilter(FileSystemFixture projectDir) {
         projectDir.create {
             dir("src/test/resources/META-INF/services") {
                 file("org.junit.platform.launcher.PostDiscoveryFilter").text = "org.junit.platform.launcher.TestPostDiscoveryFilter"

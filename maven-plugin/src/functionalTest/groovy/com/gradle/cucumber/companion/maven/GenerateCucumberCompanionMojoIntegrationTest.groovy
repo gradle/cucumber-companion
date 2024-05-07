@@ -48,7 +48,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("Test")
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test")
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -71,7 +71,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("Test", false, succeedingFeatures)
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test", succeedingFeatures)
         expectedCompanions.forEach {
             verifyAll(sureFireTestReport(it)) {
                 Files.exists(it)
@@ -89,7 +89,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         configureCompanionPluginToAllowEmptySuites()
         createFeatureFiles(workspace.fileSystem)
         createStepFiles(workspace.fileSystem)
-        createPostDiscoveryFilter(workspace.fileSystem)
+        createPostDiscoveryFilter(workspace.fileSystem, "$CucumberFeature.USER_PROFILE.packageName.$CucumberFeature.USER_PROFILE.className")
         registerPostDiscoveryFilter(workspace.fileSystem)
 
         when:
@@ -101,7 +101,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("Test", true, allSucceedingFeatures)
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test", allowEmptySuites: true, allSucceedingFeatures)
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)

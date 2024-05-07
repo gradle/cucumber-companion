@@ -44,7 +44,7 @@ abstract class CucumberCompanionExtension @Inject constructor(
     /**
      * Configuration falls back to values, configured at the extension level.
      */
-    private val defaultConfigireTask = Action<GenerateCucumberSuiteCompanionTask> {
+    private val defaultConfigureTask = Action<GenerateCucumberSuiteCompanionTask> {
         allowEmptySuites.set(this@CucumberCompanionExtension.allowEmptySuites.get())
     }
 
@@ -59,10 +59,10 @@ abstract class CucumberCompanionExtension @Inject constructor(
      */
     fun generateCucumberSuiteCompanion(
         suite: JvmTestSuite,
-    ) = generateCucumberSuiteCompanion(suite, defaultConfigireTask)
+    ) = generateCucumberSuiteCompanion(suite, defaultConfigureTask)
 
     fun generateCucumberSuiteCompanion(
         suite: JvmTestSuite,
-        configureTask: Action<GenerateCucumberSuiteCompanionTask> = defaultConfigireTask
+        configureTask: Action<GenerateCucumberSuiteCompanionTask> = defaultConfigureTask
     ) = generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory, configureTask)
 }

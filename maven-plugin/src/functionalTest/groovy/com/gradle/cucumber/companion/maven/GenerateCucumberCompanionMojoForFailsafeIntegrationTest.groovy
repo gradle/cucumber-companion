@@ -48,7 +48,7 @@ class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumb
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("IT")
+        def expectedCompanions = expectedCompanionFiles(suffix: "IT")
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -71,7 +71,7 @@ class GenerateCucumberCompanionMojoForFailsafeIntegrationTest extends BaseCucumb
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles("IT")
+        def expectedCompanions = expectedCompanionFiles(suffix: "IT")
         expectedCompanions.forEach {
             verifyAll(failsafeFireTestReport(it)) {
                 Files.exists(it)
