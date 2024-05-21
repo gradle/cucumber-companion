@@ -24,13 +24,13 @@ import spock.util.io.FileSystemFixture
 class CucumberFixture {
 
     @Memoized
-    List<ExpectedCompanionFile> expectedCompanionFiles(String suffix = '', List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    List<ExpectedCompanionFile> expectedCompanionFiles(Map options = [suffix: '', allowEmptySuites: false], List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         features.collect {
-            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, suffix)
+            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, (options.suffix ?: '') as String, (options.allowEmptySuites ?: false) as boolean)
         }
     }
 
-    void createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    def createFeatureFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/resources") {
                 features.each {
@@ -40,12 +40,59 @@ class CucumberFixture {
         }
     }
 
-    void createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    def createStepFiles(FileSystemFixture projectDir, List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
         projectDir.create {
             dir("src/test/java") {
                 features.each {
                     file(it.stepFilePath).text = it.stepFileContent
                 }
+            }
+        }
+    }
+
+    def createPostDiscoveryFilter(FileSystemFixture projectDir, String filteredClassName) {
+        projectDir.create {
+            dir("src/test/java/org/junit/platform/launcher") {
+                file("TestPostDiscoveryFilter.java").text = """
+                    package org.junit.platform.launcher;
+                    
+                    import org.junit.platform.engine.*;
+                    import org.junit.platform.engine.support.descriptor.*;
+                    import org.junit.platform.launcher.PostDiscoveryFilter;
+                    import java.util.*;
+                    
+                    // allows only one, pre-defined class name in the discovery phase
+                    public class TestPostDiscoveryFilter implements PostDiscoveryFilter {
+                    
+                        public FilterResult apply(TestDescriptor testDescriptor) {
+                            if(testDescriptor.getSource().isPresent()) {
+                                TestSource testSource = testDescriptor.getSource().get();
+                                // looking for FQCN of features and their parents
+                                String className = testSource.toString();
+                                // need also to consider 'feature' children of the suite
+                                if(testSource instanceof ClassSource) {
+                                    className = ((ClassSource) testSource).getClassName();
+                                } else if(testSource instanceof ClasspathResourceSource) {
+                                    String classpathResourceName = ((ClasspathResourceSource) testSource).getClasspathResourceName();
+                                    className = classpathResourceName
+                                        .replace('/', '.')
+                                        .replace(".feature", "")
+                                        .replaceAll("[^a-zA-Z0-9_\\\\.]", "_");
+                                }
+                                return FilterResult.includedIf("${filteredClassName}".equalsIgnoreCase(className));
+                            }
+                            return FilterResult.excluded("Suite/Feature name doesn't match");
+                        }
+                    }
+                """
+            }
+        }
+    }
+
+    def registerPostDiscoveryFilter(FileSystemFixture projectDir) {
+        projectDir.create {
+            dir("src/test/resources/META-INF/services") {
+                file("org.junit.platform.launcher.PostDiscoveryFilter").text = "org.junit.platform.launcher.TestPostDiscoveryFilter"
             }
         }
     }

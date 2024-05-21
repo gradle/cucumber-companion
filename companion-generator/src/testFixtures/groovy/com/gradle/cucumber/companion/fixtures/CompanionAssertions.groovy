@@ -33,7 +33,7 @@ class CompanionAssertions {
         Path companionFile = fileResolver.apply(companion)
         assert Files.exists(companionFile)
         def expected = """${companion.packageName ? "                    package $companion.packageName;\n\n" : ''}\
-                    @org.junit.platform.suite.api.Suite
+                    @org.junit.platform.suite.api.Suite${companion.allowEmptySuites ? "(failIfNoTests = false)": ''}
                     @org.junit.platform.suite.api.SelectClasspathResource("${companion.classPathResource}")
                     class ${companion.className} {
                         public static final String CONTENT_HASH = "${companion.contentHash}";

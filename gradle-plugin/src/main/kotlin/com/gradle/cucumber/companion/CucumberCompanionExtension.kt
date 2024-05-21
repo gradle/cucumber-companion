@@ -15,6 +15,7 @@
  */
 package com.gradle.cucumber.companion
 
+import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Property
@@ -31,17 +32,37 @@ abstract class CucumberCompanionExtension @Inject constructor(
     private val projectLayout: ProjectLayout
 ) {
     companion object {
-        val NAME = "cucumberCompanion"
+        const val NAME = "cucumberCompanion"
     }
 
     @get:Input
     abstract val enableForStandardTestTask: Property<Boolean>
 
-    init {
-        enableForStandardTestTask.convention(true)
+    @get:Input
+    abstract val allowEmptySuites: Property<Boolean>
+
+    /**
+     * Configuration falls back to values, configured at the extension level.
+     */
+    private val defaultConfigureTask = Action<GenerateCucumberSuiteCompanionTask> {
+        allowEmptySuites.set(this@CucumberCompanionExtension.allowEmptySuites.get())
     }
 
-    fun generateCucumberSuiteCompanion(suite: JvmTestSuite) {
-        generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory)
+    init {
+        enableForStandardTestTask.convention(true)
+        allowEmptySuites.convention(false)
     }
+
+    /**
+     * Keep the function w/o additional task configuration action since groovy doesn't play nice
+     * with default parameter values and is unable to find the method.
+     */
+    fun generateCucumberSuiteCompanion(
+        suite: JvmTestSuite,
+    ) = generateCucumberSuiteCompanion(suite, defaultConfigureTask)
+
+    fun generateCucumberSuiteCompanion(
+        suite: JvmTestSuite,
+        configureTask: Action<GenerateCucumberSuiteCompanionTask> = defaultConfigureTask
+    ) = generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory, configureTask)
 }

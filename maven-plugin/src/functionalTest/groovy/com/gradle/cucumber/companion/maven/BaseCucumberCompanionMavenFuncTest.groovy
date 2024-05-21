@@ -80,6 +80,7 @@ abstract class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             addManagedDependency("org.junit", "junit-bom", JUNIT_VERSION)
             addDependency("org.junit.jupiter", "junit-jupiter", null, "test")
             addDependency("org.junit.platform", "junit-platform-suite", null, "test")
+            addDependency("org.junit.platform", "junit-platform-launcher", null, "test")
             addDependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
             addDependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
             it.with(pom)

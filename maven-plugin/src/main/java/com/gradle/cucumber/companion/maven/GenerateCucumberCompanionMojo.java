@@ -51,6 +51,9 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     @Parameter(defaultValue = "Test", required = true)
     private String generatedFileNameSuffix;
 
+    @Parameter(defaultValue = "false")
+    private boolean allowEmptySuites;
+
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
 
@@ -108,7 +111,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
                 .mapToInt(companionFile -> {
                     try {
                         logDebug(() -> "Creating " + companionFile);
-                        CompanionGenerator.create(companionFile);
+                        CompanionGenerator.create(companionFile, allowEmptySuites);
                         return 1;
                     } catch (IOException e) {
                         throw new RuntimeException("Could not create companion files.", e);

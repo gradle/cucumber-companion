@@ -27,8 +27,9 @@ class ExpectedCompanionFile {
     String packageName
     String classPathResource
     String contentHash
+    boolean allowEmptySuites
 
-    static ExpectedCompanionFile create(String featureName, String contentHash, String packageName, String suffix = '') {
+    static ExpectedCompanionFile create(String featureName, String contentHash, String packageName, String suffix = '', boolean allowEmptySuites = false) {
         def safeName = featureName.replaceAll(" ", "_") + suffix
         new ExpectedCompanionFile(
             featureName,
@@ -36,7 +37,8 @@ class ExpectedCompanionFile {
             safeName,
             packageName,
             [packageName.replaceAll(/\./, '/'), featureName + ".feature"].findAll().join("/"),
-            contentHash
+            contentHash,
+            allowEmptySuites
         )
     }
 }
