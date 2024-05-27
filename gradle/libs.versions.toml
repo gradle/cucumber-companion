@@ -4,7 +4,7 @@ groovy = "3.0.17" # needs to be the same as the one embedded in Gradle, otherwis
 spock = "2.3-groovy-3.0"
 # Note: Keep compatible gradle/maven versions in sync with Readme.adoc
 mavenMinCompatible = "3.8.6"
-mavenMaxCompatible = "3.9.6"
+mavenMaxCompatible = "3.9.7"
 gradleMinSupported = "7.3"
 
 junit = "5.10.2"
