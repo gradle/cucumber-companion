@@ -9,7 +9,7 @@ gradleMinSupported = "7.3"
 
 junit = "5.10.2"
 cucumber = "7.15.0"
-surefire = "3.2.5"
+surefire = "3.3.0"
 failsafe = "3.2.5"
 
 [libraries]
