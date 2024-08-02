@@ -5,6 +5,12 @@ on:
     branches:
     - main
   pull_request:
+  workflow_dispatch:
+
+# https://stackoverflow.com/a/72408109/16358266
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   cross-version-tests:
@@ -15,15 +21,19 @@ jobs:
         os: [ 'ubuntu-latest', 'windows-latest', 'macos-latest' ]
     steps:
     - uses: actions/checkout@v4
+
     - name: "Setup Build Environment"
       uses: ./.github/actions/setup-environment
 
-    - name: 'Run all Cross Version Tests'
-      uses: gradle/gradle-build-action@v3
-      env:
-        GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }}
+    - name: 'Setup Gradle'
+      uses: gradle/actions/setup-gradle@v3
       with:
-        arguments: "allMavenCrossVersionTests allGradleCrossVersionTests  --no-configuration-cache"
+        develocity-access-key: ${{ secrets.GE_ACCESS_KEY }}
+
+    - name: 'Run cross version tests'
+      run: ./gradlew allMavenCrossVersionTests allGradleCrossVersionTests  --no-configuration-cache
+      env:
+        DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_KEY }} # needed for remote cache push enablement
 
     - name: Store reports
       if: failure()
