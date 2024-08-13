@@ -20,15 +20,15 @@ dependencyResolutionManagement {
     }
 }
 
-val isCI = System.getenv("CI")?.toBoolean() ?: false
+val isCI = providers.environmentVariable("CI").presence()
 val isCC = gradle.serviceOf<BuildFeatures>().configurationCache.active.getOrElse(false)
 
-require(!isCC || !isCI) { "Configuration-Cache should be disabled on CI" }
+require(!isCC || isCI.not().get() ) { "Configuration-Cache should be disabled on CI" }
 
 develocity {
     server = "https://ge.gradle.org"
     buildScan {
-        uploadInBackground = !isCI
+        uploadInBackground = isCI.not()
         publishing.onlyIf { it.isAuthenticated }
         obfuscation {
             ipAddresses { addresses -> addresses.map { "0.0.0.0" } }
@@ -44,8 +44,8 @@ buildCache {
     remote(develocity.buildCache) {
         server = "https://eu-build-cache.gradle.org"
         isEnabled = true
-        val accessKey = providers.environmentVariable("DEVELOCITY_ACCESS_KEY").orNull
-        isPush = isCI && !accessKey.isNullOrEmpty()
+        val hasAccessKey = providers.environmentVariable("DEVELOCITY_ACCESS_KEY").map { it.isNotBlank() }.orElse(false)
+        isPush = hasAccessKey.zip(isCI) { accessKey, ci -> ci && accessKey }.get()
     }
 }
 
@@ -54,3 +54,6 @@ rootProject.name = "cucumber-companion"
 include("gradle-plugin")
 include("maven-plugin")
 include("companion-generator")
+
+fun Provider<*>.presence(): Provider<Boolean> = map { true }.orElse(false)
+fun Provider<Boolean>.not(): Provider<Boolean> = map { !it }
