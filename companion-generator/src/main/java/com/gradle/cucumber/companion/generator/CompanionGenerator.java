@@ -54,8 +54,20 @@ public class CompanionGenerator {
             bw.write(companionFile.getClassPathResource().replace('\\', '/'));
             bw.write("\")");
             bw.write(NEW_LINE);
+            for (String annotation : options.getAnnotations()) {
+                bw.write(annotation);
+                bw.write(NEW_LINE);
+            }
             bw.write("class ");
             bw.write(companionFile.getFeatureName());
+            if (options.getBaseClass().isPresent()) {
+                bw.write(" extends ");
+                bw.write(options.getBaseClass().get());
+            }
+            if (!options.getInterfaces().isEmpty()) {
+                bw.write(" implements ");
+                bw.write(String.join(", ", options.getInterfaces()));
+            }
             bw.write(" {");
             bw.write(NEW_LINE);
             bw.write("    public static final String CONTENT_HASH = \"");
