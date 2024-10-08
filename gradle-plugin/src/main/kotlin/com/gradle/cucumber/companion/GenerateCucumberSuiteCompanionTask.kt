@@ -15,15 +15,17 @@
  */
 package com.gradle.cucumber.companion
 
+import com.gradle.cucumber.companion.generator.CompanionGenerator
+import com.gradle.cucumber.companion.generator.GeneratedClassOptions
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.tasks.*
-import com.gradle.cucumber.companion.generator.CompanionGenerator
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.*
 import org.gradle.work.ChangeType
 import org.gradle.work.InputChanges
 import java.nio.file.Files
-
+import java.util.Optional
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
 
@@ -36,22 +38,35 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     @get:Input
     abstract val allowEmptySuites: Property<Boolean>
 
+    @get:Nested
+    val customizeGeneratedClasses = project.objects.newInstance(GeneratedClassCustomization::class.java)
+
     init {
         allowEmptySuites.convention(false)
+    }
+
+    fun customizeGeneratedClasses(action: Action<GeneratedClassCustomization>) {
+        action.execute(customizeGeneratedClasses)
     }
 
     @TaskAction
     fun generateSuiteCompanionClasses(inputChanges: InputChanges) {
         val outputDir = outputDirectory.get().asFile.toPath()
         val inputDir = cucumberFeatureSources.get().asFile.toPath()
+        val generatedClassOptions = GeneratedClassOptions(
+            Optional.ofNullable(customizeGeneratedClasses.baseClass.orNull),
+            customizeGeneratedClasses.interfaces.get(),
+            customizeGeneratedClasses.annotations.get(),
+            allowEmptySuites.get()
+        )
         inputChanges.getFileChanges(cucumberFeatureSources).filter { it.file.name.toString().endsWith(".feature") }
             .forEach { change ->
                 val companionFile = CompanionGenerator.resolve(inputDir, outputDir, change.file.toPath())
                 when (change.changeType) {
-                    ChangeType.ADDED -> CompanionGenerator.create(companionFile, allowEmptySuites.get())
+                    ChangeType.ADDED -> CompanionGenerator.create(companionFile, generatedClassOptions)
                     ChangeType.MODIFIED -> {
                         Files.deleteIfExists(companionFile.destination)
-                        CompanionGenerator.create(companionFile, allowEmptySuites.get())
+                        CompanionGenerator.create(companionFile, generatedClassOptions)
                     }
                     ChangeType.REMOVED -> Files.deleteIfExists(companionFile.destination)
                     else -> {}

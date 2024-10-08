@@ -15,6 +15,9 @@
  */
 package com.gradle.cucumber.companion.maven;
 
+import com.gradle.cucumber.companion.generator.CompanionFile;
+import com.gradle.cucumber.companion.generator.CompanionGenerator;
+import com.gradle.cucumber.companion.generator.GeneratedClassOptions;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,8 +27,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import com.gradle.cucumber.companion.generator.CompanionFile;
-import com.gradle.cucumber.companion.generator.CompanionGenerator;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -34,7 +35,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -57,9 +60,27 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
 
+    @Parameter
+    private GeneratedClassCustomization customizeGeneratedClasses;
+
+    private GeneratedClassOptions generatedClassOptions;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         generatedSourcesDirectoryInternal = Paths.get(generatedSourcesDirectory);
+        generatedClassOptions = customizeGeneratedClasses == null
+            ? new GeneratedClassOptions(
+            Optional.empty(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            allowEmptySuites
+        )
+            : new GeneratedClassOptions(
+            Optional.ofNullable(customizeGeneratedClasses.getBaseClass()).filter(it -> !it.trim().isEmpty()),
+            customizeGeneratedClasses.getInterfaces(),
+            customizeGeneratedClasses.getAnnotations(),
+            allowEmptySuites
+        );
         getLog().info("Generating Cucumber companion files...");
         cleanOutputDirectory();
         ensureOutputDirectoryExists();
@@ -111,7 +132,7 @@ public class GenerateCucumberCompanionMojo extends AbstractMojo {
                 .mapToInt(companionFile -> {
                     try {
                         logDebug(() -> "Creating " + companionFile);
-                        CompanionGenerator.create(companionFile, allowEmptySuites);
+                        CompanionGenerator.create(companionFile, generatedClassOptions);
                         return 1;
                     } catch (IOException e) {
                         throw new RuntimeException("Could not create companion files.", e);

@@ -33,7 +33,7 @@ public class CompanionGenerator {
         return new CompanionFile(sourceDir, targetDir, actual);
     }
 
-    public static void create(CompanionFile companionFile, boolean allowEmptySuites) throws IOException {
+    public static void create(CompanionFile companionFile, GeneratedClassOptions options) throws IOException {
         // We could have included a templating engine, but it is just a few lines
         // and adding the dependency seems overkill.
         ensureParentDirectoryExists(companionFile.getDestination());
@@ -46,7 +46,7 @@ public class CompanionGenerator {
                 bw.write(NEW_LINE);
             }
             bw.write("@org.junit.platform.suite.api.Suite");
-            if(allowEmptySuites) {
+            if (options.isAllowEmptySuites()) {
                 bw.write("(failIfNoTests = false)");
             }
             bw.write(NEW_LINE);
