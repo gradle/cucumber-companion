@@ -17,6 +17,7 @@ package com.gradle.cucumber.companion.fixtures
 
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
+import groovy.transform.NamedVariant
 
 @CompileStatic
 @Immutable
@@ -28,8 +29,19 @@ class ExpectedCompanionFile {
     String classPathResource
     String contentHash
     boolean allowEmptySuites
+    String baseClass
+    List<String> interfaces
+    List<String> annotations
 
-    static ExpectedCompanionFile create(String featureName, String contentHash, String packageName, String suffix = '', boolean allowEmptySuites = false) {
+    @NamedVariant
+    static ExpectedCompanionFile create(String featureName,
+                                        String contentHash,
+                                        String packageName,
+                                        String suffix = '',
+                                        boolean allowEmptySuites = false,
+                                        String baseClass = null,
+                                        List<String> interfaces = [],
+                                        List<String> annotations = []) {
         def safeName = featureName.replaceAll(" ", "_") + suffix
         new ExpectedCompanionFile(
             featureName,
@@ -38,7 +50,10 @@ class ExpectedCompanionFile {
             packageName,
             [packageName.replaceAll(/\./, '/'), featureName + ".feature"].findAll().join("/"),
             contentHash,
-            allowEmptySuites
+            allowEmptySuites,
+            baseClass,
+            interfaces,
+            annotations
         )
     }
 }

@@ -196,7 +196,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "feature companion is present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -209,7 +209,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -222,7 +222,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -235,12 +235,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "one companion remains"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles([CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
         and: "the other is gone"
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH]).forEach {
             with(companionFile(it)) {
                 !Files.exists(it)
             }
