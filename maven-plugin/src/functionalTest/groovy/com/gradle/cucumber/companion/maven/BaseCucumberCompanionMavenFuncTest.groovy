@@ -22,6 +22,7 @@ import com.gradle.cucumber.companion.testcontext.TestContext
 import com.gradle.maven.functest.BaseMavenFuncTest
 import com.gradle.maven.functest.MavenDistribution
 import com.gradle.maven.functest.Pom
+import groovy.xml.MarkupBuilder
 
 import java.nio.file.Path
 
@@ -49,7 +50,7 @@ abstract class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
         workspace.fileSystem.resolve("target/failsafe-reports/TEST-${companion.packageName ? companion.packageName + '.' : ''}${companion.className}.xml")
     }
 
-    def createProject(@DelegatesTo(value = Pom.class, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
+    def createProject(@DelegatesTo(value = Pom, strategy = Closure.DELEGATE_FIRST) Closure<?> pom = {}) {
         workspace.pom {
             addProperty("maven.compiler.source", "1.8")
             addProperty("maven.compiler.target", "1.8")
@@ -84,6 +85,27 @@ abstract class BaseCucumberCompanionMavenFuncTest extends BaseMavenFuncTest {
             addDependency("io.cucumber", "cucumber-java", CUCUMBER_VERSION, "test")
             addDependency("io.cucumber", "cucumber-junit-platform-engine", CUCUMBER_VERSION, "test")
             it.with(pom)
+        }
+    }
+
+    void configureCompanionPlugin(@DelegatesTo(value = MarkupBuilder, strategy = Closure.DELEGATE_FIRST) Closure<?> customConfiguration) {
+        workspace.pom.replacePlugin("com.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
+            executions {
+                execution {
+                    goals {
+                        goal("generate-cucumber-companion-files")
+                    }
+                    configuration {
+                        delegate.with(customConfiguration)
+                    }
+                }
+            }
+        }
+    }
+
+    void configureCompanionPluginToAllowEmptySuites() {
+        configureCompanionPlugin {
+            allowEmptySuites("true")
         }
     }
 }

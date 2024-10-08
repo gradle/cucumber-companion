@@ -17,6 +17,7 @@ package com.gradle.cucumber.companion.fixtures
 
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
+import groovy.transform.NamedVariant
 import spock.util.io.FileSystemFixture
 
 @SuppressWarnings("GrMethodMayBeStatic")
@@ -24,9 +25,17 @@ import spock.util.io.FileSystemFixture
 class CucumberFixture {
 
     @Memoized
-    List<ExpectedCompanionFile> expectedCompanionFiles(Map options = [suffix: '', allowEmptySuites: false], List<CucumberFeature> features = CucumberFeature.allSucceeding()) {
+    @NamedVariant
+    List<ExpectedCompanionFile> expectedCompanionFiles(
+        List<CucumberFeature> features = CucumberFeature.allSucceeding(),
+        String suffix = '',
+        boolean allowEmptySuites = false,
+        String baseClass = null,
+        List<String> interfaces = [],
+        List<String> annotations = []) {
+
         features.collect {
-            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, (options.suffix ?: '') as String, (options.allowEmptySuites ?: false) as boolean)
+            ExpectedCompanionFile.create(it.featureName, it.contentHash, it.packageName, suffix, allowEmptySuites, baseClass, interfaces, annotations)
         }
     }
 
@@ -48,6 +57,44 @@ class CucumberFixture {
                 }
             }
         }
+    }
+
+    def createBaseClass(FileSystemFixture projectDir, String baseClassName) {
+        projectDir.create {
+            dir("src/test/java") {
+                file(toFileName(baseClassName)).text = """
+                    ${extractPackageName(baseClassName)}                    
+                   
+                    public class ${extractClassName(baseClassName)} {
+                    }
+                """
+            }
+        }
+    }
+
+    def createInterface(FileSystemFixture projectDir, String interfaceName) {
+        projectDir.create {
+            dir("src/test/java") {
+                file(toFileName(interfaceName)).text = """
+                    ${extractPackageName(interfaceName)}                    
+                   
+                    public interface ${extractClassName(interfaceName)} {
+                    }
+                """
+            }
+        }
+    }
+
+    private String toFileName(String className) {
+        className.replace('.', '/') + ".java"
+    }
+
+    private String extractPackageName(String className) {
+        className.contains('.') ? 'package ' + className.substring(0, className.lastIndexOf('.')) + ';' : ''
+    }
+
+    private String extractClassName(String className) {
+        className.contains('.') ? className.substring(className.lastIndexOf('.') + 1) : className
     }
 
     def createPostDiscoveryFilter(FileSystemFixture projectDir, String filteredClassName) {

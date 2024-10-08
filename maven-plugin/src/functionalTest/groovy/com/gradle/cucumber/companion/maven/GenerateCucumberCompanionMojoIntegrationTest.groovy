@@ -38,6 +38,33 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         createProject()
         createFeatureFiles(workspace.fileSystem)
         createStepFiles(workspace.fileSystem)
+        if (baseClass) {
+            createBaseClass(workspace.fileSystem, baseClass)
+        }
+        interfaces.each {
+            createInterface(workspace.fileSystem, it)
+        }
+        configureCompanionPlugin {
+            customizeGeneratedClasses {
+                if (baseClass) {
+                    delegate."baseClass"(baseClass)
+                }
+                if (interfaces) {
+                    delegate."interfaces" {
+                        interfaces.forEach {
+                            "interface"(it)
+                        }
+                    }
+                }
+                if (annotations) {
+                    delegate."annotations" {
+                        annotations.forEach {
+                            annotation(it)
+                        }
+                    }
+                }
+            }
+        }
 
         when:
         def result = maven.execute(workspace, "test")
@@ -48,11 +75,21 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles(suffix: "Test")
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test", baseClass: baseClass, interfaces: interfaces, annotations: annotations)
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
         }
+
+        where:
+        baseClass   | interfaces                    | annotations
+        null        | []                            | []
+        "base.Base" | []                            | []
+        null        | ["base.IFace"]                | []
+        null        | ["base.IFace", "base.IOther"] | []
+        null        | []                            | ['@org.junit.jupiter.api.Tag("tag")']
+        null        | []                            | ['@org.junit.jupiter.api.Tag("tag1")', '@org.junit.jupiter.api.Tag("tag2")']
+        "base.Base" | ["base.IFace"]                | ['@org.junit.jupiter.api.Tag("tag")']
     }
 
     def "generate-cucumber-companion-files mojo generates valid companion files that are picked up by surefire"() {
@@ -71,7 +108,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles(suffix: "Test", succeedingFeatures)
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test", features: succeedingFeatures)
         expectedCompanions.forEach {
             verifyAll(sureFireTestReport(it)) {
                 Files.exists(it)
@@ -101,7 +138,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         result.log.each { println(it) }
 
         and:
-        def expectedCompanions = expectedCompanionFiles(suffix: "Test", allowEmptySuites: true, allSucceedingFeatures)
+        def expectedCompanions = expectedCompanionFiles(suffix: "Test", allowEmptySuites: true, features: allSucceedingFeatures)
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -134,18 +171,4 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
         log.find("Failing Feature.A feature which does not succeed when executed -- Time elapsed: .+ <<< FAILURE!") != null
     }
 
-    private void configureCompanionPluginToAllowEmptySuites() {
-        workspace.pom.replacePlugin("com.gradle.cucumber.companion", "cucumber-companion-maven-plugin", '${it-project.version}') {
-            executions {
-                execution {
-                    goals {
-                        goal("generate-cucumber-companion-files")
-                    }
-                    configuration {
-                        allowEmptySuites("true")
-                    }
-                }
-            }
-        }
-    }
 }

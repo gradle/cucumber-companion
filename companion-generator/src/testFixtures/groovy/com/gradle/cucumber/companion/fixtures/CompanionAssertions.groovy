@@ -34,8 +34,10 @@ class CompanionAssertions {
         assert Files.exists(companionFile)
         def expected = """${companion.packageName ? "                    package $companion.packageName;\n\n" : ''}\
                     @org.junit.platform.suite.api.Suite${companion.allowEmptySuites ? "(failIfNoTests = false)": ''}
-                    @org.junit.platform.suite.api.SelectClasspathResource("${companion.classPathResource}")
-                    class ${companion.className} {
+                    @org.junit.platform.suite.api.SelectClasspathResource("${companion.classPathResource}")${
+            companion.annotations ? "\n${companion.annotations.collect { "                    $it" }.join('\n')}" : ''
+        }
+                    class ${companion.className}${companion.baseClass ? " extends $companion.baseClass" : ''}${companion.interfaces ? " implements ${companion.interfaces.join(', ')}" : ''} {
                         public static final String CONTENT_HASH = "${companion.contentHash}";
                     }
                     """.stripIndent(true)
