@@ -120,6 +120,52 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
+    def "can customize generated classes"(BuildScriptLanguage buildScriptLanguage, Variant variant, String baseClass, List<String> interfaces, List<String> annotations) {
+        given:
+        setupPlugin(buildScriptLanguage, variant, """
+            customizeGeneratedClasses {
+                ${baseClass ? "baseClass = \"$baseClass\"" : ''}
+                ${interfaces ? "${interfaces.collect { "interfaces.add(\"$it\")" }.join('\n')}" : ''}
+                ${annotations ? "${annotations.collect { "annotations.add(\"${it.replace(/"/, /\"/)}\")" }.join('\n')}" : ''}
+            }
+            """.stripIndent(true))
+        createFeatureFiles(workspace)
+
+        and:
+        if (baseClass) {
+            createBaseClass(workspace, baseClass)
+        }
+        interfaces.each {
+            createInterface(workspace, it)
+        }
+
+        when:
+        def result = run("testGenerateCucumberSuiteCompanion")
+
+        then:
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        def expectedCompanions = expectedCompanionFiles(baseClass: baseClass, interfaces: interfaces, annotations: annotations)
+
+        expectedCompanions.forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+        where:
+        [buildScriptLanguage, variant, [baseClass, interfaces, annotations]] << [BuildScriptLanguage.values(), Variant.values(),
+            [
+                [null, [], []],
+                ["base.Base", [], []],
+                [null, ["base.IFace"], []],
+                [null, ["base.IFace", "base.IOther"], []],
+                [null, [], ['@org.junit.jupiter.api.Tag("tag")']],
+                [null, [], ['@org.junit.jupiter.api.Tag("tag1")', '@org.junit.jupiter.api.Tag("tag2")']],
+                ["base.Base", ["base.IFace"], ['@org.junit.jupiter.api.Tag("tag")']]
+            ]
+        ].combinations()
+
+    }
+
     def "generated companion files are picked up by Gradle's test task and tests succeed"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         given:
         def succeedingFeatures = CucumberFeature.allSucceeding()
