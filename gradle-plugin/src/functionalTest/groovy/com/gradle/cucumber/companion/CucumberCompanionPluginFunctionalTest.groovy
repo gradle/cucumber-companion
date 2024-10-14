@@ -101,7 +101,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
     def "can customize classes to allow for empty suites"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         given:
-        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites = true')
+        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites.set(true)')
         createFeatureFiles(workspace)
 
         when:
@@ -124,7 +124,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         given:
         setupPlugin(buildScriptLanguage, variant, """
             customizeGeneratedClasses {
-                ${baseClass ? "baseClass = \"$baseClass\"" : ''}
+                ${baseClass ? "baseClass.set(\"$baseClass\")" : ''}
                 ${interfaces ? "${interfaces.collect { "interfaces.add(\"$it\")" }.join('\n')}" : ''}
                 ${annotations ? "${annotations.collect { "annotations.add(\"${it.replace(/"/, /\"/)}\")" }.join('\n')}" : ''}
             }
@@ -194,7 +194,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         given:
         def allSucceedingFeatures = CucumberFeature.allSucceeding()
         def discoveredSucceedingFeatures = [CucumberFeature.USER_PROFILE]
-        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites = true')
+        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites.set(true)')
         createFeatureFiles(workspace, allSucceedingFeatures)
         createStepFiles(workspace, allSucceedingFeatures)
         createPostDiscoveryFilter(workspace, "$CucumberFeature.USER_PROFILE.packageName.$CucumberFeature.USER_PROFILE.className")
