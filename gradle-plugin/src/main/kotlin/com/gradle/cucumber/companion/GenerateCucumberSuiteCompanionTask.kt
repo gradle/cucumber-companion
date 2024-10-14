@@ -39,11 +39,7 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     abstract val allowEmptySuites: Property<Boolean>
 
     @get:Nested
-    val customizeGeneratedClasses = project.objects.newInstance(GeneratedClassCustomization::class.java)
-
-    init {
-        allowEmptySuites.convention(false)
-    }
+    abstract val customizeGeneratedClasses: GeneratedClassCustomization
 
     fun customizeGeneratedClasses(action: Action<GeneratedClassCustomization>) {
         action.execute(customizeGeneratedClasses)

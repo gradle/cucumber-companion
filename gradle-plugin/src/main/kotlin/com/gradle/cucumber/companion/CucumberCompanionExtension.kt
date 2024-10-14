@@ -17,7 +17,6 @@ package com.gradle.cucumber.companion
 
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -26,14 +25,11 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskContainer
 import javax.inject.Inject
 
-
 abstract class CucumberCompanionExtension @Inject constructor(
     @Internal
     private val taskContainer: TaskContainer,
     @Internal
-    private val projectLayout: ProjectLayout,
-    @Internal
-    private val objects: ObjectFactory
+    private val projectLayout: ProjectLayout
 ) {
     companion object {
         const val NAME = "cucumberCompanion"
@@ -46,7 +42,7 @@ abstract class CucumberCompanionExtension @Inject constructor(
     abstract val allowEmptySuites: Property<Boolean>
 
     @get:Nested
-    val customizeGeneratedClasses = objects.newInstance(GeneratedClassCustomization::class.java)
+    abstract val customizeGeneratedClasses: GeneratedClassCustomization
 
     init {
         enableForStandardTestTask.convention(true)
