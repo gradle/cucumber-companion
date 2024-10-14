@@ -33,7 +33,7 @@ public class CompanionGenerator {
         return new CompanionFile(sourceDir, targetDir, actual);
     }
 
-    public static void create(CompanionFile companionFile, boolean allowEmptySuites) throws IOException {
+    public static void create(CompanionFile companionFile, GeneratedClassOptions options) throws IOException {
         // We could have included a templating engine, but it is just a few lines
         // and adding the dependency seems overkill.
         ensureParentDirectoryExists(companionFile.getDestination());
@@ -46,7 +46,7 @@ public class CompanionGenerator {
                 bw.write(NEW_LINE);
             }
             bw.write("@org.junit.platform.suite.api.Suite");
-            if(allowEmptySuites) {
+            if (options.isAllowEmptySuites()) {
                 bw.write("(failIfNoTests = false)");
             }
             bw.write(NEW_LINE);
@@ -54,8 +54,20 @@ public class CompanionGenerator {
             bw.write(companionFile.getClassPathResource().replace('\\', '/'));
             bw.write("\")");
             bw.write(NEW_LINE);
+            for (String annotation : options.getAnnotations()) {
+                bw.write(annotation);
+                bw.write(NEW_LINE);
+            }
             bw.write("class ");
             bw.write(companionFile.getFeatureName());
+            if (options.getBaseClass().isPresent()) {
+                bw.write(" extends ");
+                bw.write(options.getBaseClass().get());
+            }
+            if (!options.getInterfaces().isEmpty()) {
+                bw.write(" implements ");
+                bw.write(String.join(", ", options.getInterfaces()));
+            }
             bw.write(" {");
             bw.write(NEW_LINE);
             bw.write("    public static final String CONTENT_HASH = \"");

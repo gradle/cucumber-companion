@@ -89,9 +89,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then:
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        def expectedCompanions = expectedCompanionFiles(
-            allowEmptySuites: [Variant.IMPLICIT_WITH_ADDITIONAL_CONFIG, Variant.EXPLICIT_WITH_ADDITIONAL_CONFIG].contains(variant)
-        )
+        def expectedCompanions = expectedCompanionFiles()
 
         expectedCompanions.forEach {
             companionAssertions.assertCompanionFile(it)
@@ -101,7 +99,74 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
-    def "generated companion files are picked up by Gradle's test task and tests succeed"() {
+    def "can customize classes to allow for empty suites"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
+        given:
+        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites.set(true)')
+        createFeatureFiles(workspace)
+
+        when:
+        def result = run("testGenerateCucumberSuiteCompanion")
+
+        then:
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        def expectedCompanions = expectedCompanionFiles(allowEmptySuites: true)
+
+        expectedCompanions.forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+        where:
+        [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
+    }
+
+    def "can customize generated classes"(BuildScriptLanguage buildScriptLanguage, Variant variant, String baseClass, List<String> interfaces, List<String> annotations) {
+        given:
+        setupPlugin(buildScriptLanguage, variant, """
+            customizeGeneratedClasses {
+                ${baseClass ? "baseClass.set(\"$baseClass\")" : ''}
+                ${interfaces ? "${interfaces.collect { "interfaces.add(\"$it\")" }.join('\n')}" : ''}
+                ${annotations ? "${annotations.collect { "annotations.add(\"${it.replace(/"/, /\"/)}\")" }.join('\n')}" : ''}
+            }
+            """.stripIndent(true))
+        createFeatureFiles(workspace)
+
+        and:
+        if (baseClass) {
+            createBaseClass(workspace, baseClass)
+        }
+        interfaces.each {
+            createInterface(workspace, it)
+        }
+
+        when:
+        def result = run("testGenerateCucumberSuiteCompanion")
+
+        then:
+        result.output.contains("testGenerateCucumberSuiteCompanion")
+
+        def expectedCompanions = expectedCompanionFiles(baseClass: baseClass, interfaces: interfaces, annotations: annotations)
+
+        expectedCompanions.forEach {
+            companionAssertions.assertCompanionFile(it)
+        }
+
+        where:
+        [buildScriptLanguage, variant, [baseClass, interfaces, annotations]] << [BuildScriptLanguage.values(), Variant.values(),
+            [
+                [null, [], []],
+                ["base.Base", [], []],
+                [null, ["base.IFace"], []],
+                [null, ["base.IFace", "base.IOther"], []],
+                [null, [], ['@org.junit.jupiter.api.Tag("tag")']],
+                [null, [], ['@org.junit.jupiter.api.Tag("tag1")', '@org.junit.jupiter.api.Tag("tag2")']],
+                ["base.Base", ["base.IFace"], ['@org.junit.jupiter.api.Tag("tag")']]
+            ]
+        ].combinations()
+
+    }
+
+    def "generated companion files are picked up by Gradle's test task and tests succeed"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         given:
         def succeedingFeatures = CucumberFeature.allSucceeding()
         setupPlugin(buildScriptLanguage, variant)
@@ -125,11 +190,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         [buildScriptLanguage, variant] << [BuildScriptLanguage.values(), Variant.values()].combinations()
     }
 
-    def "generated companion files are picked up by Gradle's test task and only discovered tests succeed"() {
+    def "generated companion files are picked up by Gradle's test task and only discovered tests succeed"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         given:
         def allSucceedingFeatures = CucumberFeature.allSucceeding()
         def discoveredSucceedingFeatures = [CucumberFeature.USER_PROFILE]
-        setupPlugin(buildScriptLanguage, variant)
+        setupPlugin(buildScriptLanguage, variant, 'allowEmptySuites.set(true)')
         createFeatureFiles(workspace, allSucceedingFeatures)
         createStepFiles(workspace, allSucceedingFeatures)
         createPostDiscoveryFilter(workspace, "$CucumberFeature.USER_PROFILE.packageName.$CucumberFeature.USER_PROFILE.className")
@@ -158,11 +223,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         where:
         [buildScriptLanguage, variant] << [
             BuildScriptLanguage.values(),
-            [Variant.IMPLICIT_WITH_ADDITIONAL_CONFIG, Variant.EXPLICIT_WITH_ADDITIONAL_CONFIG]
+            Variant.values()
         ].combinations()
     }
 
-    def "can run failing cucumber test"() {
+    def "can run failing cucumber test"(BuildScriptLanguage buildScriptLanguage, Variant variant) {
         def failingFeatures = [CucumberFeature.FAILING_FEATURE]
         setupPlugin(buildScriptLanguage, variant)
         createFeatureFiles(workspace, failingFeatures)
@@ -196,7 +261,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "feature companion is present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -209,7 +274,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -222,7 +287,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "both companion files are present"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH, CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
@@ -235,12 +300,12 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         then: "one companion remains"
         result.output.contains("testGenerateCucumberSuiteCompanion")
 
-        expectedCompanionFiles([:], [CucumberFeature.PASSWORD_RESET_V2]).forEach {
+        expectedCompanionFiles([CucumberFeature.PASSWORD_RESET_V2]).forEach {
             companionAssertions.assertCompanionFile(it)
         }
 
         and: "the other is gone"
-        expectedCompanionFiles([:], [CucumberFeature.PRODUCT_SEARCH]).forEach {
+        expectedCompanionFiles([CucumberFeature.PRODUCT_SEARCH]).forEach {
             with(companionFile(it)) {
                 !Files.exists(it)
             }
@@ -254,75 +319,31 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         return workspace.resolve("build/generated-sources/cucumberCompanion-test/${companion.relativePath}")
     }
 
-    def setupPlugin(BuildScriptLanguage language, Variant variant = Variant.IMPLICIT_WITH_TEST_SUITES) {
+    def setupPlugin(BuildScriptLanguage language, Variant variant = Variant.IMPLICIT_WITH_TEST_SUITES, String additionalConfig = "") {
         switch (language) {
             case BuildScriptLanguage.GROOVY:
                 switch (variant) {
                     case Variant.IMPLICIT:
-                        setupPluginGroovy(false)
+                        setupPluginGroovy(false, additionalConfig)
                         break
                     case Variant.IMPLICIT_WITH_TEST_SUITES:
-                        setupPluginGroovy()
-                        break
-                    case Variant.IMPLICIT_WITH_ADDITIONAL_CONFIG:
-                        setupPluginGroovy(true) {
-                            """\
-                            cucumberCompanion {
-                                allowEmptySuites = true 
-                            }""".stripIndent(true)
-                        }
+                        setupPluginGroovy(true, additionalConfig)
                         break
                     case Variant.EXPLICIT:
-                        setupPluginExplicitGroovy()
-                        break
-                    case Variant.EXPLICIT_WITH_ADDITIONAL_CONFIG:
-                        setupPluginExplicitGroovy(false) {
-                            """\
-                                allowEmptySuites = true
-                            """.stripIndent(true)
-                        }
-                        break
-                    case Variant.EXPLICIT_WITH_MULTI_CONFIG:
-                        setupPluginExplicitGroovy(true) {
-                            """\
-                                allowEmptySuites = false
-                            """.stripIndent(true)
-                        }
+                        setupPluginExplicitGroovy(additionalConfig)
                         break
                 }
                 break
             case BuildScriptLanguage.KOTLIN:
                 switch (variant) {
                     case Variant.IMPLICIT:
-                        setupPluginKotlin(false)
+                        setupPluginKotlin(false, additionalConfig)
                         break
                     case Variant.IMPLICIT_WITH_TEST_SUITES:
-                        setupPluginKotlin()
-                        break
-                    case Variant.IMPLICIT_WITH_ADDITIONAL_CONFIG:
-                        setupPluginKotlin(true) {
-                            """\
-                            cucumberCompanion {
-                                allowEmptySuites.set(true)
-                            }""".stripIndent()
-                        }
+                        setupPluginKotlin(true, additionalConfig)
                         break
                     case Variant.EXPLICIT:
-                        setupPluginExplicitKotlin()
-                        break
-                    case Variant.EXPLICIT_WITH_ADDITIONAL_CONFIG:
-                        setupPluginExplicitKotlin(false) {
-                            """\
-                                allowEmptySuites.set(true)
-                            """.stripIndent()
-                        }
-                        break
-                    case Variant.EXPLICIT_WITH_MULTI_CONFIG:
-                        setupPluginExplicitKotlin(true) {
-                            """\
-                                allowEmptySuites.set(false)
-                            """.stripIndent()
-                        }
+                        setupPluginExplicitKotlin(additionalConfig)
                         break
                 }
                 break
@@ -338,10 +359,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
     enum Variant {
         IMPLICIT,
         IMPLICIT_WITH_TEST_SUITES,
-        IMPLICIT_WITH_ADDITIONAL_CONFIG,
-        EXPLICIT,
-        EXPLICIT_WITH_ADDITIONAL_CONFIG,
-        EXPLICIT_WITH_MULTI_CONFIG;
+        EXPLICIT;
 
         @Override
         String toString() {
@@ -349,7 +367,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         }
     }
 
-    private def setupPluginGroovy(boolean withJvmTestSuite = true, Closure<String> additionalConfig = { "" }) {
+    private void setupPluginGroovy(boolean withJvmTestSuite = true, String additionalConfig = "") {
         buildFile = workspace.file("build.gradle")
         settingsFile = workspace.file("settings.gradle")
         settingsFile.text = ""
@@ -362,7 +380,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             repositories {
                 mavenCentral()
             }
-            ${additionalConfig.call()}
+            ${pluginBlock(additionalConfig)}
             dependencies {
             ${dependenciesRequiredForExecution()}
             }
@@ -375,7 +393,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    private def setupPluginKotlin(boolean withJvmTestSuite = true, Closure<String> additionalConfig = { "" }) {
+    private void setupPluginKotlin(boolean withJvmTestSuite = true, String additionalConfig = "") {
         buildFile = workspace.file("build.gradle.kts")
         settingsFile = workspace.file("settings.gradle.kts")
         settingsFile.text = ""
@@ -388,7 +406,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             repositories {
                 mavenCentral()
             }
-            ${additionalConfig.call()}
+            ${pluginBlock(additionalConfig)}
             dependencies {
             ${dependenciesRequiredForExecution()}
             }
@@ -401,7 +419,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    private def setupPluginExplicitGroovy(boolean applyConfigToPlugin = false, Closure<String> additionalTaskConfig = { "" }) {
+    private void setupPluginExplicitGroovy(String additionalTaskConfig = "") {
         buildFile = workspace.file("build.gradle")
         settingsFile = workspace.file("settings.gradle")
         settingsFile.text = ""
@@ -417,7 +435,6 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
             cucumberCompanion {
                 enableForStandardTestTask = false
-                ${applyConfigToPlugin ? invertBooleans(additionalTaskConfig.call()) : ""}
             }
             dependencies {
             ${dependenciesRequiredForExecution()}
@@ -426,7 +443,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 suites {
                     test {
                         useJUnitJupiter("$JUNIT_VERSION")
-                        cucumberCompanion.generateCucumberSuiteCompanion(delegate) ${block(additionalTaskConfig.call())}
+                        cucumberCompanion.generateCucumberSuiteCompanion(delegate) ${block(additionalTaskConfig)}
                         targets {
                             all {
                                 testTask.configure {
@@ -442,7 +459,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    private def setupPluginExplicitKotlin(boolean applyConfigToPlugin = false, Closure<String> additionalTaskConfig = { "" }) {
+    private void setupPluginExplicitKotlin(String additionalTaskConfig = "") {
         buildFile = workspace.file("build.gradle.kts")
         settingsFile = workspace.file("settings.gradle.kts")
         settingsFile.text = ""
@@ -459,7 +476,6 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
             cucumberCompanion {
                 enableForStandardTestTask.set(false)
-                ${applyConfigToPlugin ? invertBooleans(additionalTaskConfig.call()) : ""}
             }
             dependencies {
             ${dependenciesRequiredForExecution()}
@@ -468,7 +484,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 suites {
                     val test by getting(JvmTestSuite::class) {
                         useJUnitJupiter("$JUNIT_VERSION")
-                        generateCucumberSuiteCompanion(project) ${block(additionalTaskConfig.call())}
+                        generateCucumberSuiteCompanion(project) ${block(additionalTaskConfig)}
                         targets {
                             all {
                                 testTask.configure {
@@ -484,7 +500,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
             """.stripIndent(true)
     }
 
-    private def dependenciesRequiredForExecution() {
+    private static String dependenciesRequiredForExecution() {
         return """\
         testImplementation(platform("org.junit:junit-bom:$JUNIT_VERSION"))
         testImplementation("io.cucumber:cucumber-java:$CUCUMBER_VERSION")
@@ -495,14 +511,11 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         """.stripIndent(true)
     }
 
-    private def block(String block) {
+    private static String block(String block) {
         return block?.trim() ? "{\n${block}\n}" : ""
     }
 
-    private def invertBooleans(String s) {
-        return s?.trim() ? s
-            .replace("true", "eurt")
-            .replace("false", "true")
-            .replace("eurt", "false") : ""
+    private static String pluginBlock(String block) {
+        return block?.trim() ? "cucumberCompanion {\n${block}\n}" : ""
     }
 }

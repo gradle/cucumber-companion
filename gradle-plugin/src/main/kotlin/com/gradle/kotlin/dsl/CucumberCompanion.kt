@@ -17,6 +17,7 @@
 
 package org.gradle.kotlin.dsl
 
+import com.gradle.cucumber.companion.CucumberCompanionExtension
 import com.gradle.cucumber.companion.GenerateCucumberSuiteCompanionTask
 import com.gradle.cucumber.companion.NoOpAction
 import com.gradle.cucumber.companion.generateCucumberSuiteCompanion
@@ -26,4 +27,4 @@ import org.gradle.api.plugins.jvm.JvmTestSuite
 
 fun JvmTestSuite.generateCucumberSuiteCompanion(
     project: Project, configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
-) = generateCucumberSuiteCompanion(this, project, configureTask)
+) = generateCucumberSuiteCompanion(this, project, project.extensions.getByType<CucumberCompanionExtension>(), configureTask)

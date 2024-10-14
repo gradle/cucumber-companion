@@ -21,9 +21,9 @@ import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskContainer
 import javax.inject.Inject
-
 
 abstract class CucumberCompanionExtension @Inject constructor(
     @Internal
@@ -41,16 +41,16 @@ abstract class CucumberCompanionExtension @Inject constructor(
     @get:Input
     abstract val allowEmptySuites: Property<Boolean>
 
-    /**
-     * Configuration falls back to values, configured at the extension level.
-     */
-    private val defaultConfigureTask = Action<GenerateCucumberSuiteCompanionTask> {
-        allowEmptySuites.set(this@CucumberCompanionExtension.allowEmptySuites.get())
-    }
+    @get:Nested
+    abstract val customizeGeneratedClasses: GeneratedClassCustomization
 
     init {
         enableForStandardTestTask.convention(true)
         allowEmptySuites.convention(false)
+    }
+
+    fun customizeGeneratedClasses(action: Action<GeneratedClassCustomization>) {
+        action.execute(customizeGeneratedClasses)
     }
 
     /**
@@ -58,11 +58,11 @@ abstract class CucumberCompanionExtension @Inject constructor(
      * with default parameter values and is unable to find the method.
      */
     fun generateCucumberSuiteCompanion(
-        suite: JvmTestSuite,
-    ) = generateCucumberSuiteCompanion(suite, defaultConfigureTask)
+        suite: JvmTestSuite
+    ) = generateCucumberSuiteCompanion(suite, NoOpAction)
 
     fun generateCucumberSuiteCompanion(
         suite: JvmTestSuite,
-        configureTask: Action<GenerateCucumberSuiteCompanionTask> = defaultConfigureTask
-    ) = generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory, configureTask)
+        configureTask: Action<GenerateCucumberSuiteCompanionTask>
+    ) = generateCucumberSuiteCompanion(suite, taskContainer, projectLayout.buildDirectory, this, configureTask)
 }

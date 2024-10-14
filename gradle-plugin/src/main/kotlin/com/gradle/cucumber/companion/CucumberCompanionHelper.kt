@@ -31,21 +31,23 @@ internal object NoOpAction : Action<GenerateCucumberSuiteCompanionTask>, Seriali
 fun generateCucumberSuiteCompanion(
     suite: JvmTestSuite,
     project: Project,
+    extension: CucumberCompanionExtension,
     configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val taskContainer = project.tasks
     val buildDirectory = project.layout.buildDirectory
-    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory, configureTask)
+    generateCucumberSuiteCompanion(suite, taskContainer, buildDirectory, extension, configureTask)
 }
 
 fun generateCucumberSuiteCompanion(
     suite: JvmTestSuite,
     taskContainer: TaskContainer,
     buildDirectory: DirectoryProperty,
+    extension: CucumberCompanionExtension,
     configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val sourceSet = suite.sources
-    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name, configureTask)
+    generateCucumberSuiteCompanion(taskContainer, buildDirectory, sourceSet, suite.name, extension, configureTask)
 }
 
 fun generateCucumberSuiteCompanion(
@@ -53,6 +55,7 @@ fun generateCucumberSuiteCompanion(
     buildDirectory: DirectoryProperty,
     sourceSet: SourceSet,
     name: String,
+    extension: CucumberCompanionExtension,
     configureTask: Action<GenerateCucumberSuiteCompanionTask> = NoOpAction
 ) {
     val companionTask = taskContainer.register(
@@ -65,6 +68,10 @@ fun generateCucumberSuiteCompanion(
         // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
         this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
         this.outputDirectory.set(outputDir)
+        allowEmptySuites.convention(extension.allowEmptySuites)
+        customizeGeneratedClasses.baseClass.convention(extension.customizeGeneratedClasses.baseClass)
+        customizeGeneratedClasses.annotations.convention(extension.customizeGeneratedClasses.annotations)
+        customizeGeneratedClasses.interfaces.convention(extension.customizeGeneratedClasses.interfaces)
         configureTask.execute(this)
     }
     sourceSet.java.srcDir(companionTask)
