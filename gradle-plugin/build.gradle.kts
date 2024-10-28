@@ -37,8 +37,8 @@ testContext {
 
 tasks.withType<ShadowJar>().configureEach {
     archiveClassifier = ""
-    from(file("../LICENSE")) {
-        into("META-INF")
+    into(".") {
+        from(rootProject.layout.projectDirectory.file("LICENSE"))
     }
 }
 
@@ -61,7 +61,7 @@ verifyPublication {
         withJarContaining {
             // Test for shadowed files
             aFile("com/gradle/cucumber/companion/generator/CompanionGenerator.class")
-            aFile("META-INF/LICENSE")
+            aFile("LICENSE")
         }
     }
     expectPublishedArtifact("com.gradle.cucumber.companion.gradle.plugin") {
