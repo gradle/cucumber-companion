@@ -65,8 +65,7 @@ fun generateCucumberSuiteCompanion(
     val outputDir = buildDirectory.dir("generated-sources/cucumberCompanion-$name")
 
     companionTask.configure {
-        // this is a bit icky, ideally we'd use a SourceDirectorySet ourselves, but I'm not sure that is proper
-        this.cucumberFeatureSources.set(sourceSet.resources.srcDirs.first())
+        this.cucumberFeatureSources.from(sourceSet.resources.sourceDirectories)
         this.outputDirectory.set(outputDir)
         allowEmptySuites.convention(extension.allowEmptySuites)
         customizeGeneratedClasses.baseClass.convention(extension.customizeGeneratedClasses.baseClass)

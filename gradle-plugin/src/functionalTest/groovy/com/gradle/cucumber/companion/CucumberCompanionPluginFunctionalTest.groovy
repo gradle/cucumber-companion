@@ -315,6 +315,55 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         buildScriptLanguage << BuildScriptLanguage.values()
     }
 
+    def "supports multiple "(BuildScriptLanguage buildScriptLanguage) {
+        given:
+        def succeedingFeatures = CucumberFeature.allSucceeding()
+
+        and:
+        def featureSets = succeedingFeatures.collate(2)
+        createFeatureFiles(workspace, featureSets[0])
+        createStepFiles(workspace, succeedingFeatures)
+
+        and:
+        def additionalConfig = ""
+        featureSets[1..-1].eachWithIndex { features, idx ->
+            def srcDirectory = "src/test/features$idx"
+            workspace.dir(srcDirectory) {
+                features.forEach {
+                    file(it.featureFilePath).text = it.featureFileContent
+                }
+            }
+            additionalConfig += "srcDir(\"$srcDirectory\")\n"
+        }
+
+        additionalConfig = """
+        sourceSets {
+            named("test") {
+                resources {
+                    ${additionalConfig}
+                }
+            }
+        }"""
+
+        setupPlugin(buildScriptLanguage, Variant.IMPLICIT_WITH_TEST_SUITES, additionalConfig)
+
+        when:
+        def result = run("test")
+
+        then:
+        succeedingFeatures
+            .collect { it.toExpectedTestTaskOutput("PASSED") }
+            .every {
+                result.output.contains(it)
+            }
+
+        and:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+
+        where:
+        buildScriptLanguage << BuildScriptLanguage.values()
+    }
+
     Path companionFile(ExpectedCompanionFile companion) {
         return workspace.resolve("build/generated-sources/cucumberCompanion-test/${companion.relativePath}")
     }
