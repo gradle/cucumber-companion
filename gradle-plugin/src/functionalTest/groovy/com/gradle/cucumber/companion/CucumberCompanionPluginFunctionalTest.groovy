@@ -21,6 +21,7 @@ import com.gradle.cucumber.companion.fixtures.CucumberFixture
 import com.gradle.cucumber.companion.fixtures.ExpectedCompanionFile
 import com.gradle.cucumber.companion.testcontext.TestContext
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.util.GradleVersion
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -32,6 +33,8 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
 
     static final String CUCUMBER_VERSION = TestContext.getRequiredValue("cucumberVersion")
     static final String JUNIT_VERSION = TestContext.getRequiredValue("junitVersion")
+    static final GradleVersion GRADLE_VERSION = GradleVersion.version(TestContext.getRequiredValue("gradleVersion"))
+    static final GradleVersion GRADLE_7_3 = GradleVersion.version("7.3")
 
     @TempDir
     FileSystemFixture workspace
@@ -58,7 +61,9 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         def result = run("test")
 
         then:
-        result.task(":testGenerateCucumberSuiteCompanion").outcome == TaskOutcome.NO_SOURCE
+        // older versions of Gradle do not treat FileCollections with empty directories as empty
+        def expectedOutcome = GRADLE_VERSION <= GRADLE_7_3 ? TaskOutcome.SUCCESS : TaskOutcome.NO_SOURCE
+        result.task(":testGenerateCucumberSuiteCompanion").outcome == expectedOutcome
 
         where:
         buildScriptLanguage << BuildScriptLanguage.values()
@@ -310,6 +315,55 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
                 !Files.exists(it)
             }
         }
+
+        where:
+        buildScriptLanguage << BuildScriptLanguage.values()
+    }
+
+    def "supports multiple resource directories"(BuildScriptLanguage buildScriptLanguage) {
+        given:
+        def succeedingFeatures = CucumberFeature.allSucceeding()
+
+        and:
+        def featureSets = succeedingFeatures.collate(2)
+        createFeatureFiles(workspace, featureSets[0])
+        createStepFiles(workspace, succeedingFeatures)
+
+        and:
+        def additionalConfig = ""
+        featureSets[1..-1].eachWithIndex { features, idx ->
+            def srcDirectory = "src/test/features$idx"
+            workspace.dir(srcDirectory) {
+                features.forEach {
+                    file(it.featureFilePath).text = it.featureFileContent
+                }
+            }
+            additionalConfig += "srcDir(\"$srcDirectory\")\n"
+        }
+
+        additionalConfig = """
+        sourceSets {
+            named("test") {
+                resources {
+                    ${additionalConfig}
+                }
+            }
+        }"""
+
+        setupPlugin(buildScriptLanguage, Variant.IMPLICIT_WITH_TEST_SUITES, additionalConfig)
+
+        when:
+        def result = run("test")
+
+        then:
+        succeedingFeatures
+            .collect { it.toExpectedTestTaskOutput("PASSED") }
+            .every {
+                result.output.contains(it)
+            }
+
+        and:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
 
         where:
         buildScriptLanguage << BuildScriptLanguage.values()

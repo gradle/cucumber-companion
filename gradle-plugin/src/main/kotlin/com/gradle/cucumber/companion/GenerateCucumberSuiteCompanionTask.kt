@@ -19,6 +19,7 @@ import com.gradle.cucumber.companion.generator.CompanionGenerator
 import com.gradle.cucumber.companion.generator.GeneratedClassOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
@@ -29,8 +30,8 @@ import java.util.Optional
 
 abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
 
-    @get:[SkipWhenEmpty InputDirectory IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
-    abstract val cucumberFeatureSources: DirectoryProperty
+    @get:[SkipWhenEmpty InputFiles IgnoreEmptyDirectories PathSensitive(PathSensitivity.RELATIVE)]
+    abstract val cucumberFeatureSources: ConfigurableFileCollection
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
@@ -48,7 +49,12 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     @TaskAction
     fun generateSuiteCompanionClasses(inputChanges: InputChanges) {
         val outputDir = outputDirectory.get().asFile.toPath()
-        val inputDir = cucumberFeatureSources.get().asFile.toPath()
+        val inputDirs = cucumberFeatureSources.files.map { it.toPath() }.filter { Files.exists(it) }
+        inputDirs.forEach {
+            if (!Files.isDirectory(it)) {
+                throw IllegalArgumentException("Cucumber feature sources must be directories, but $it is a file.")
+            }
+        }
         val generatedClassOptions = GeneratedClassOptions(
             Optional.ofNullable(customizeGeneratedClasses.baseClass.orNull),
             customizeGeneratedClasses.interfaces.get(),
@@ -57,7 +63,10 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
         )
         inputChanges.getFileChanges(cucumberFeatureSources).filter { it.file.name.toString().endsWith(".feature") }
             .forEach { change ->
-                val companionFile = CompanionGenerator.resolve(inputDir, outputDir, change.file.toPath())
+                val actual = change.file.toPath()
+                val inputDir = inputDirs.find { actual.startsWith(it) }
+                    ?: throw IllegalArgumentException("File ${change.file} must be in one of the 'cucumberFeatureSources' directories to be processed by the 'GenerateCucumberSuiteCompanionTask'.")
+                val companionFile = CompanionGenerator.resolve(inputDir, outputDir, actual)
                 when (change.changeType) {
                     ChangeType.ADDED -> CompanionGenerator.create(companionFile, generatedClassOptions)
                     ChangeType.MODIFIED -> {
