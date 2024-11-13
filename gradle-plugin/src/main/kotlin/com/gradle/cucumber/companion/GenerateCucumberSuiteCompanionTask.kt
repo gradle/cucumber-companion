@@ -65,7 +65,7 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
             .forEach { change ->
                 val actual = change.file.toPath()
                 val inputDir = inputDirs.find { actual.startsWith(it) }
-                    ?: throw IllegalArgumentException("File ${change.file} is not in any of the input directories")
+                    ?: throw IllegalArgumentException("File ${change.file} must be in one of the 'cucumberFeatureSources' directories to be processed by the 'GenerateCucumberSuiteCompanionTask'.")
                 val companionFile = CompanionGenerator.resolve(inputDir, outputDir, actual)
                 when (change.changeType) {
                     ChangeType.ADDED -> CompanionGenerator.create(companionFile, generatedClassOptions)

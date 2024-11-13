@@ -315,7 +315,7 @@ class CucumberCompanionPluginFunctionalTest extends Specification {
         buildScriptLanguage << BuildScriptLanguage.values()
     }
 
-    def "supports multiple "(BuildScriptLanguage buildScriptLanguage) {
+    def "supports multiple resource directories"(BuildScriptLanguage buildScriptLanguage) {
         given:
         def succeedingFeatures = CucumberFeature.allSucceeding()
 
