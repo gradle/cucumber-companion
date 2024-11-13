@@ -49,10 +49,10 @@ abstract class GenerateCucumberSuiteCompanionTask : DefaultTask() {
     @TaskAction
     fun generateSuiteCompanionClasses(inputChanges: InputChanges) {
         val outputDir = outputDirectory.get().asFile.toPath()
-        val inputDirs = cucumberFeatureSources.files.map { it.toPath() }
+        val inputDirs = cucumberFeatureSources.files.map { it.toPath() }.filter { Files.exists(it) }
         inputDirs.forEach {
             if (!Files.isDirectory(it)) {
-                throw IllegalArgumentException("Cucumber feature sources must be directories")
+                throw IllegalArgumentException("Cucumber feature sources must be directories, but $it is a file.")
             }
         }
         val generatedClassOptions = GeneratedClassOptions(
