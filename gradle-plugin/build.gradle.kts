@@ -108,6 +108,7 @@ tasks.register("allGradleCrossVersionTests") {
     group = "Cross Version"
     description = "Runs all ${allCrossVersionTests.size} gradle cross version test tasks"
 }
+
 gradlePlugin {
     website = "https://github.com/gradle/cucumber-companion/"
     vcsUrl = "https://github.com/gradle/cucumber-companion/"
@@ -115,7 +116,7 @@ gradlePlugin {
         id = "com.gradle.cucumber.companion"
         implementationClass = "com.gradle.cucumber.companion.CucumberCompanionPlugin"
         displayName = "Cucumber Companion Plugin"
-        description = project.description
+        description = "${project.description}\n\nRelease notes: https://github.com/gradle/cucumber-companion/releases/tag/${project.version}"
         tags.addAll("cucumber", "test")
     }
 }
