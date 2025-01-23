@@ -25,7 +25,7 @@ maven-core = { module = "org.apache.maven:maven-core", version.ref = "mavenMaxCo
 maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "mavenMaxCompatible" }
 maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.15.1" }
 takariIntegrationTesting = { module = "io.takari.maven.plugins:takari-plugin-integration-testing", version = "3.0.5" }
-jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.1" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.2" }
 shadowPlugin = { module = "com.github.johnrengelman:shadow", version = "8.1.1" }
 surefirePlugin = { module = "org.apache.maven.plugins:maven-surefire-plugin", version.ref = "surefire" }
 failsafePlugin = { module = "org.apache.maven.plugins:maven-failsafe-plugin", version.ref = "failsafe" }
