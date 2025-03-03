@@ -43,7 +43,6 @@ publishing {
 }
 
 val functionalTest by testing.suites.creating(JvmTestSuite::class) {
-    testType = TestSuiteType.FUNCTIONAL_TEST
     dependencies {
         implementation(libs.takariIntegrationTesting)
     }
