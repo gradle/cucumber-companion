@@ -7,7 +7,7 @@ mavenMinCompatible = "3.8.6"
 mavenMaxCompatible = "3.9.10"
 gradleMinSupported = "7.3"
 
-junit = "5.13.2"
+junit = "5.13.3"
 cucumber = "7.23.0"
 surefire = "3.5.2"
 failsafe = "3.5.2"
