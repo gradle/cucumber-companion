@@ -13,7 +13,7 @@ dependencies {
     // hack to make the version catalog available to convention plugin scripts (https://github.com/gradle/gradle/issues/17968)
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
     implementation(libs.shadowPlugin)
-    implementation((libs.licensePlugin))
+    implementation(libs.licensePlugin)
 }
 
 testing {
@@ -23,7 +23,7 @@ testing {
 
             dependencies {
                 implementation(project())
-                implementation(platform(libs.groovy.bom.get().toString()))
+                implementation(platform(libs.groovy.bom))
                 implementation(libs.groovy.nio)
             }
         }

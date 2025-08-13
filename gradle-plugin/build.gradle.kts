@@ -10,6 +10,7 @@ plugins {
     id("conventions.test-context")
     id("conventions.verify-publication")
     id("conventions.code-style")
+    id("conventions.java-toolchain")
 }
 
 project.description = "Gradle Plugin making Cucumber tests compatible with Develocity's test acceleration features"
@@ -42,12 +43,6 @@ tasks.withType<ShadowJar>().configureEach {
     }
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
 dependencies {
     implementation(projects.companionGenerator)
 }
@@ -75,7 +70,7 @@ testing {
             useSpock(libs.versions.spock)
 
             dependencies {
-                implementation(platform(libs.groovy.bom.get().toString()))
+                implementation(platform(libs.groovy.bom))
                 implementation(libs.groovy.nio)
                 implementation(testFixtures(projects.companionGenerator))
             }

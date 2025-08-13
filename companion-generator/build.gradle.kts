@@ -6,12 +6,7 @@ plugins {
     `jvm-test-suite`
     `java-test-fixtures`
     id("conventions.code-style")
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
+    id("conventions.java-toolchain")
 }
 
 dependencies {
@@ -29,7 +24,7 @@ testing {
         val test by getting(JvmTestSuite::class) {
             useSpock(libs.versions.spock)
             dependencies {
-                implementation(platform(libs.groovy.bom.get().toString()))
+                implementation(platform(libs.groovy.bom))
             }
         }
     }

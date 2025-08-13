@@ -1,9 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import de.benediktritter.maven.plugin.development.MavenPluginDevelopmentExtension
-import de.benediktritter.maven.plugin.development.task.GenerateHelpMojoSourcesTask
-import de.benediktritter.maven.plugin.development.task.GenerateMavenPluginDescriptorTask
+import org.gradlex.maven.plugin.development.task.GenerateHelpMojoSourcesTask
+import org.gradlex.maven.plugin.development.task.GenerateMavenPluginDescriptorTask
 
 plugins {
     java
@@ -16,6 +15,7 @@ plugins {
     id("conventions.test-context")
     id("conventions.verify-publication")
     id("conventions.code-style")
+    id("conventions.java-toolchain")
 }
 
 project.description = "Maven Plugin making Cucumber tests compatible with Develocity's test acceleration features"
@@ -46,9 +46,6 @@ verifyPublication {
 }
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
     withJavadocJar()
     withSourcesJar()
 }
@@ -57,7 +54,7 @@ val mavenJava by publishing.publications.creating(MavenPublication::class) {
     artifactId = mavenPluginArtifactId
     artifact(tasks.named("javadocJar"))
     artifact(tasks.named("sourcesJar"))
-    shadow.component(this)
+    from(components["shadow"])
 }
 
 dependencies {
@@ -70,7 +67,7 @@ dependencies {
 val functionalTest by testing.suites.getting(JvmTestSuite::class) {
     useSpock(libs.versions.spock)
     dependencies {
-        implementation(platform(libs.groovy.bom.get().toString()))
+        implementation(platform(libs.groovy.bom))
         implementation(libs.groovy.nio)
         implementation(libs.groovy.xml)
         implementation(testFixtures(projects.companionGenerator))
@@ -97,19 +94,13 @@ mavenPluginTesting {
 
 // adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files
 project.afterEvaluate {
-    val sourceSet = extensions.getByType(MavenPluginDevelopmentExtension::class).pluginSourceSet.get()
     tasks.named<ShadowJar>("shadowJar").configure {
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
         into(".") {
             from(rootProject.layout.projectDirectory.file("LICENSE"))
         }
     }
-    sourceSet.java.srcDir(
-        tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })
-}
-
-listOf("generateMavenPluginDescriptor", "generateMavenPluginHelpMojoSources").forEach {
-    tasks.named(it) {
-        notCompatibleWithConfigurationCache("https://github.com/britter/maven-plugin-development/issues/8")
-    }
+    sourceSets.main.get().java.srcDir(
+        tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory }
+    )
 }
