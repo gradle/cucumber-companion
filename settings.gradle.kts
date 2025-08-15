@@ -21,9 +21,6 @@ dependencyResolutionManagement {
 }
 
 val isCI = providers.environmentVariable("CI").presence()
-val isCC = gradle.serviceOf<BuildFeatures>().configurationCache.active.getOrElse(false)
-
-require(!isCC || isCI.not().get() ) { "Configuration-Cache should be disabled on CI" }
 
 develocity {
     server = "https://ge.gradle.org"
