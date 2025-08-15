@@ -35,7 +35,7 @@ verifyPublication {
 
         withJarContaining {
             aFile("META-INF/maven/plugin.xml")
-            aFile("META-INF/maven/com.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
+            aFile("META-INF/maven/com.gradle.cucumber.companion/cucumber-companion-maven-plugin/plugin-help.xml") {
                 matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
             // Test for shadowed files
@@ -55,6 +55,10 @@ val mavenJava by publishing.publications.creating(MavenPublication::class) {
     artifact(tasks.named("javadocJar"))
     artifact(tasks.named("sourcesJar"))
     from(components["shadow"])
+}
+
+val generateMetadataFileForMavenJavaPublication by tasks.existing {
+    dependsOn(tasks.named("jar"))
 }
 
 dependencies {
@@ -95,6 +99,7 @@ mavenPluginTesting {
 // adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files
 project.afterEvaluate {
     tasks.named<ShadowJar>("shadowJar").configure {
+        archiveClassifier = ""
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
         into(".") {
             from(rootProject.layout.projectDirectory.file("LICENSE"))
