@@ -15,14 +15,15 @@
  */
 package com.gradle.cucumber.companion
 
-import groovy.transform.TupleConstructor
 import com.gradle.cucumber.companion.testcontext.TestContext
+import groovy.transform.TupleConstructor
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.util.GradleVersion
 import org.gradle.util.internal.DefaultGradleVersion
 
 import java.nio.file.Path
+import java.nio.file.Files
 
 @TupleConstructor
 class TestContextRunner {
@@ -48,6 +49,9 @@ class TestContextRunner {
                 args << '--configuration-cache'
             }
         }
+
+        writeJavaHomeToGradleProperties()
+
         def runner = GradleRunner.create()
             .forwardOutput()
             .withPluginClasspath()
@@ -57,5 +61,39 @@ class TestContextRunner {
         runner
     }
 
+    private void writeJavaHomeToGradleProperties() {
+        def gradlePropertiesFile = workspaceRoot.resolve("gradle.properties")
+        def properties = loadProperties(gradlePropertiesFile)
+        properties.setProperty("org.gradle.java.home", jdkPathForGradleVersion(GRADLE_VERSION))
+        gradlePropertiesFile.withWriter {
+            properties.forEach((key, value) -> {
+                it.writeLine("${key}=${escapeFilePath(value as String)}")
+            })
+        }
+    }
+
+    private static Properties loadProperties(Path gradlePropertiesFile) {
+        new Properties().tap { properties ->
+            if (Files.exists(gradlePropertiesFile)) {
+                gradlePropertiesFile.withReader {
+                    properties.load(it)
+                }
+            } else {
+                Files.createFile(gradlePropertiesFile)
+            }
+        }
+    }
+
+    private static String jdkPathForGradleVersion(GradleVersion version) {
+        if (version >= GradleVersion.version("9.0.0")) {
+            System.getenv("JDK17")
+        } else {
+            System.getenv("JDK8")
+        }
+    }
+
+    private static String escapeFilePath(String s) {
+        return s?.replace("\\", "\\\\")
+    }
 
 }
