@@ -6,6 +6,7 @@ spock = "2.3-groovy-3.0"
 mavenMinCompatible = "3.8.6"
 mavenMaxCompatible = "3.9.11"
 gradleMinSupported = "7.3"
+gradleMaxSupported = "9.0.0"
 
 junit = "5.13.4"
 cucumber = "7.27.2"
