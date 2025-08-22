@@ -1,9 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import de.benediktritter.maven.plugin.development.MavenPluginDevelopmentExtension
-import de.benediktritter.maven.plugin.development.task.GenerateHelpMojoSourcesTask
-import de.benediktritter.maven.plugin.development.task.GenerateMavenPluginDescriptorTask
+import org.gradlex.maven.plugin.development.task.GenerateHelpMojoSourcesTask
+import org.gradlex.maven.plugin.development.task.GenerateMavenPluginDescriptorTask
 
 plugins {
     java
@@ -35,7 +34,7 @@ verifyPublication {
 
         withJarContaining {
             aFile("META-INF/maven/plugin.xml")
-            aFile("META-INF/maven/com.gradle.cucumber.companion/maven-plugin/plugin-help.xml") {
+            aFile("META-INF/maven/com.gradle.cucumber.companion/cucumber-companion-maven-plugin/plugin-help.xml") {
                 matching("Should contain plugin's artifact id") { it.contains("<artifactId>cucumber-companion-maven-plugin</artifactId>") }
             }
             // Test for shadowed files
@@ -97,15 +96,15 @@ mavenPluginTesting {
 
 // adapted from the mavenPluginDevelopment plugin, otherwise the shadowJar doesn't pickup the necessary metadata files
 project.afterEvaluate {
-    val sourceSet = extensions.getByType(MavenPluginDevelopmentExtension::class).pluginSourceSet.get()
     tasks.named<ShadowJar>("shadowJar").configure {
         from(tasks.named<GenerateMavenPluginDescriptorTask>("generateMavenPluginDescriptor"))
         into(".") {
             from(rootProject.layout.projectDirectory.file("LICENSE"))
         }
     }
-    sourceSet.java.srcDir(
-        tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory })
+    sourceSets.main.get().java.srcDir(
+        tasks.named<GenerateHelpMojoSourcesTask>("generateMavenPluginHelpMojoSources").map { it.outputDirectory }
+    )
 }
 
 listOf("generateMavenPluginDescriptor", "generateMavenPluginHelpMojoSources").forEach {

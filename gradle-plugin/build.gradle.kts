@@ -25,6 +25,7 @@ afterEvaluate {
 
 val crossVersions = listOf(
     CrossVersionTest(libs.versions.gradleMinSupported.get(), false), // lowest supported versions as jvm-test-suites was added here
+    CrossVersionTest(libs.versions.gradleMaxSupported.get(), true), // max supported version as we compile against a fixed 8.x version of the Gradle API
     CrossVersionTest(GradleVersion.current().version, true),
 )
 

@@ -9,4 +9,3 @@ dependencyResolutionManagement {
 rootProject.name = "plugins"
 
 include("build-logic")
-include("maven-plugin-testing")
