@@ -3,10 +3,10 @@ description: Installs required JDKs for building and testing
 runs:
   using: "composite"
   steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
   - name: 'Set up JDK 8'
-    uses: actions/setup-java@v5
+    uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5
     with:
       distribution: 'liberica'
       java-version: 8
@@ -16,7 +16,7 @@ runs:
     run: echo "JDK8=$JAVA_HOME" >> $GITHUB_ENV
 
   - name: 'Set up JDK 17'
-    uses: actions/setup-java@v5
+    uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5
     with:
       distribution: 'temurin'
       java-version: 17
