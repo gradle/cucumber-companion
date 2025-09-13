@@ -11,7 +11,7 @@ gradleMaxSupported = "9.0.0"
 junit = "5.13.4"
 cucumber = "7.28.2"
 surefire = "3.5.2"
-failsafe = "3.5.2"
+failsafe = "3.5.4"
 
 [libraries]
 cucumber-bom = { module = "io.cucumber:cucumber-bom", version.ref = "cucumber" }
