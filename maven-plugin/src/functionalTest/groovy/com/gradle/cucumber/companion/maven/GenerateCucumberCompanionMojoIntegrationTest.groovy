@@ -168,7 +168,7 @@ class GenerateCucumberCompanionMojoIntegrationTest extends BaseCucumberCompanion
 
         and:
         def log = workspace.fileSystem.file("log.txt").text
-        log.find("Failing Feature.A feature which does not succeed when executed -- Time elapsed: .+ <<< FAILURE!") != null
+        log.find("A feature which does not succeed when executed -- Time elapsed: .+ <<< FAILURE!") != null
     }
 
 }
