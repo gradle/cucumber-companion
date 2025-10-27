@@ -9,7 +9,7 @@ gradleMinSupported = "7.3"
 gradleMaxSupported = "9.0.0"
 
 junit = "5.14.0"
-cucumber = "7.30.0"
+cucumber = "7.31.0"
 surefire = "3.5.4"
 failsafe = "3.5.4"
 
