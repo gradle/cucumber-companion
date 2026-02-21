@@ -10,7 +10,7 @@ gradleMaxSupported = "9.0.0"
 
 junit = "5.14.3"
 cucumber = "7.34.2"
-surefire = "3.5.4"
+surefire = "3.5.5"
 failsafe = "3.5.4"
 
 [libraries]
