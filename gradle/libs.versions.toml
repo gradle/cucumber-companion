@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.25"
+kotlin = "2.3.21"
 groovy = "3.0.24" # needs to be the same as the one embedded in Gradle, otherwise it will conflict with the one injected via gradleApi
 spock = "2.4-groovy-3.0"
 # Note: Keep compatible gradle/maven versions in sync with Readme.adoc
