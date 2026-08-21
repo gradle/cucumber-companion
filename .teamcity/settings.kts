@@ -92,6 +92,7 @@ fun publish(
         }
         params {
             extraParams(this)
+            param("env.PGP_SIGNING_KEY_ID", "%pgpSigningKeyId%")
             password("env.PGP_SIGNING_KEY", "%pgpSigningKey%")
             password("env.PGP_SIGNING_KEY_PASSPHRASE", "%pgpSigningPassphrase%")
         }
