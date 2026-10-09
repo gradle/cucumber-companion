@@ -11,6 +11,12 @@ on:
 jobs:
   verfy-team-city-configs:
     runs-on: 'ubuntu-latest'
+    # The WARP secrets are read through OIDC, which GitHub does not issue for
+    # pull requests from forks. Skip those runs instead of failing them.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
     - name: Set up JDK 21
@@ -19,6 +25,23 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+    # builds.gradle.org (the teamcity-server Maven repository in .teamcity/pom.xml)
+    # is only reachable from the Gradle internal network. The tunnel is per job.
+    # gradle/actions-internal is used instead of gradle/gradle-github-actions because
+    # this repository is public and public repos cannot use internal-repo actions.
+    - name: Get WARP secrets from AWS Secrets Manager
+      uses: gradle/actions-internal/get-aws-secrets@00a7bf3d928efad1127e3146fa47f7a7191415f1 # 2026-09-29
+      with:
+        role-to-assume: arn:aws:iam::992382829881:role/GHASecrets_cucumber-companion_all
+        secret-ids: |
+          WARP_CLIENT_ID,gha/_shared/_all/warp_basic_access_client_id
+          WARP_CLIENT_SECRET,gha/_shared/_all/warp_basic_access_client_secret
+    - name: Connect to Gradle internal network via Cloudflare WARP
+      timeout-minutes: 5
+      uses: gradle/actions-internal/warp-connect@00a7bf3d928efad1127e3146fa47f7a7191415f1 # 2026-09-29
+      with:
+        client_id: ${{ env.WARP_CLIENT_ID }}
+        client_secret: ${{ env.WARP_CLIENT_SECRET }}
     - name: Build with Maven
       working-directory: ./.teamcity
       run: mvn --batch-mode teamcity-configs:generate
