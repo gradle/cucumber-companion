@@ -25,10 +25,6 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    # builds.gradle.org (the teamcity-server Maven repository in .teamcity/pom.xml)
-    # is only reachable from the Gradle internal network. The tunnel is per job.
-    # gradle/actions-internal is used instead of gradle/gradle-github-actions because
-    # this repository is public and public repos cannot use internal-repo actions.
     - name: Get WARP secrets from AWS Secrets Manager
       uses: gradle/actions-internal/get-aws-secrets@00a7bf3d928efad1127e3146fa47f7a7191415f1 # 2026-09-29
       with:
