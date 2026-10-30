@@ -30,7 +30,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2023.05"
+version = "2026.2"
 project {
     description = "Publishes the Cucumber Companion Plugins to Maven Central or Artifactory"
 
