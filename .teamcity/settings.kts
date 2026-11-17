@@ -53,10 +53,6 @@ project {
         it.param("env.ORG_GRADLE_PROJECT_gradle.publish.key", "%plugin.portal.publish.key%")
         it.password("env.ORG_GRADLE_PROJECT_gradle.publish.secret", "%plugin.portal.publish.secret%")
     })
-
-    params {
-        param("env.DEVELOCITY_ACCESS_KEY", "%ge.gradle.org.access.key%")
-    }
 }
 
 fun publish(
